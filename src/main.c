@@ -195,6 +195,37 @@ uint64_t whitePawnLegalMoves(Board* board,int x ,int y){
     return legalSquares;
     
 }
+/**
+ * it will return the legal moves that this pawn can do (pseudo legal move).
+ * 
+ * @param board the entire board object.
+ * @param x the column that the piece is in (0,0) is top left.
+ * @param y the row that the piece is in (0,0) is top left.
+ * @return a 64 bit number for each square . each square (bit) that is set to one 
+ * @return it means that piece can go to that square 
+ * 
+ */
+uint64_t blackPawnLegalMoves(Board* board,int x ,int y){
+    uint64_t legalSquares = 0x0000000000000000ULL;
+    // if the square in front the pawn is free
+    if (isNthBitSet(board->allPieces,(y+1)*8+x)){
+        setNthBit(legalSquares,(y+1)*8+x);
+        // if the pawn is at start and two squares in front it is free
+        if (y == 6 &&  isNthBitSet(board->allPieces,3*8+x)){
+            setNthBit(legalSquares,3*8+x);
+        }
+    }
+    // left capture 
+    if (x%8 != 0 && isNthBitSet(board->blackPieces,(y+1)*8+(x-1))){
+        setNthBit(legalSquares,(y+1)*8+(x-1));
+    }
+    // right capture 
+    if (x%8 != 7 && isNthBitSet(board->blackPieces,(y+1)*8+(x+1))){
+        setNthBit(legalSquares,(y+1)*8+(x+1));
+    }
+    return legalSquares;
+    
+}
 int main(){
     Board chessBoard;
     initBoard(&chessBoard);
