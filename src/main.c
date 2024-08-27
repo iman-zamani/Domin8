@@ -2,8 +2,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 struct Board{
+    bool isWhiteTurn;
+
+    // 
     uint64_t whitePieces;
     uint64_t blackPieces;
+
+    uint64_t allPieces;
     // bit board representation of each piece 
     uint64_t whiteRook;
     uint64_t whiteKnight;
@@ -51,6 +56,23 @@ bool isNthBitSet(uint64_t number, int n) {
     // Use bitwise AND to determine if the nth bit is set.
     return (number & mask) != 0;
 }
+
+/**
+ * it will set the nth bit of the 64 bit number.
+ * 
+ * @param number the 64-bit unsigned integer.
+ * @param n the bit position to set to one (0-based, where 0 is the least significant bit).
+ */
+void setNthBit(uint64_t* number, int n) {
+    *number |= ((uint64_t)1 << n);
+}
+
+/**
+ * it will initialize the board to starting position 
+ * with this FEN:
+ * rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1.
+ * @param board the entire board object that you want to modify.
+ */
 void initBoard(Board* board) {
     // initialize bitBoards for a standard chess game.
     board->whiteRook   = 0x0000000000000081ULL;
@@ -68,7 +90,10 @@ void initBoard(Board* board) {
     board->blackKing   = 0x0800000000000000ULL;
     board->blackPawn   = 0x00FF000000000000ULL;
     board->blackPieces = board->blackRook | board->blackKnight | board->blackBishop | board->blackPawn | board->blackQueen | board->blackKing;
-
+    //
+    board->allPieces = board->whitePieces | board->blackPieces;
+    // it is what turn 
+    board->isWhiteTurn = true;
     // castle rights default to true at game start.
     board->whiteKingCastle = true;
     board->whiteQueenCastle = true;
@@ -137,6 +162,39 @@ void printBoard(Board* board){
     }
 }
 
+
+
+/**
+ * it will return the legal moves that this pawn can do (pseudo legal move).
+ * 
+ * @param board the entire board object.
+ * @param x the column that the piece is in (0,0) is top left.
+ * @param y the row that the piece is in (0,0) is top left.
+ * @return a 64 bit number for each square . each square (bit) that is set to one 
+ * @return it means that piece can go to that square 
+ * 
+ */
+uint64_t whitePawnLegalMoves(Board* board,int x ,int y){
+    uint64_t legalSquares = 0x0000000000000000ULL;
+    // if the square in front the pawn is free
+    if (isNthBitSet(board->allPieces,(y-1)*8+x)){
+        setNthBit(legalSquares,(y-1)*8+x);
+        // if the pawn is at start and two squares in front it is free
+        if (y == 6 &&  isNthBitSet(board->allPieces,4*8+x)){
+            setNthBit(legalSquares,4*8+x);
+        }
+    }
+    // left capture 
+    if (x%8 != 0 && isNthBitSet(board->blackPieces,(y-1)*8+(x-1))){
+        setNthBit(legalSquares,(y-1)*8+(x-1));
+    }
+    // right capture 
+    if (x%8 != 7 && isNthBitSet(board->blackPieces,(y-1)*8+(x+1))){
+        setNthBit(legalSquares,(y-1)*8+(x+1));
+    }
+    return legalSquares;
+    
+}
 int main(){
     Board chessBoard;
     initBoard(&chessBoard);
