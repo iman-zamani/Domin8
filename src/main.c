@@ -317,7 +317,7 @@ uint64_t blackRookLegalMoves(Board* board, int x, int y) {
     return legalSquares;
 }
 
-void whiteBishopLegalMoves(Board* board, int x, int y) {
+uint64_t whiteBishopLegalMoves(Board* board, int x, int y) {
     uint64_t legalSquares = 0x0000000000000000ULL;
     //up right
     for (int right = 1,up = 1; x + right < 8 && y - up >= 0; right++,up++) {
@@ -354,7 +354,7 @@ void whiteBishopLegalMoves(Board* board, int x, int y) {
 
     return legalSquares;
 }
-void blackBishopLegalMoves(Board* board, int x, int y) {
+uint64_t blackBishopLegalMoves(Board* board, int x, int y) {
     uint64_t legalSquares = 0x0000000000000000ULL;
     //up right
     for (int right = 1,up = 1; x + right < 8 && y - up >= 0; right++,up++) {
@@ -392,7 +392,12 @@ void blackBishopLegalMoves(Board* board, int x, int y) {
     return legalSquares;
 }
 
-
+uint64_t whiteQueenLegalMoves(Board* board, int x, int y){
+    return whiteRookLegalMoves(board,x,y) | whiteBishopLegalMoves(board,x,y);
+}
+uint64_t blackQueenLegalMoves(Board* board, int x, int y){
+    return blackRookLegalMoves(board,x,y) | blackBishopLegalMoves(board,x,y);
+}
 int main(){
     Board chessBoard;
     initBoard(&chessBoard);
