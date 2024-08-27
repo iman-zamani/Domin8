@@ -317,14 +317,86 @@ uint64_t blackRookLegalMoves(Board* board, int x, int y) {
     return legalSquares;
 }
 
+void whiteBishopLegalMoves(Board* board, int x, int y) {
+    uint64_t legalSquares = 0x0000000000000000ULL;
+    //up right
+    for (int right = 1,up = 1; x + right < 8 && y - up >= 0; right++,up++) {
+        if (isNthBitSet(board->whitePieces,  (y - up) * 8 + x + right))
+            break;
+        setNthBit(&legalSquares,  (y - up) * 8 + x + right);
+        if (isNthBitSet(board->blackPieces,  (y - up) * 8 + x + right))
+            break;
+    }
+    //up left
+    for (int left = 1,up = 1; x - left >= 0 && y - up >= 0; left++,up++) {
+        if (isNthBitSet(board->whitePieces,  (y - up) * 8 + x - left))
+            break;
+        setNthBit(&legalSquares,  (y - up) * 8 + x - left);
+        if (isNthBitSet(board->blackPieces,  (y - up) * 8 + x -left))
+            break;
+    }
+    //down right 
+    for (int right = 1,down = 1; x + right < 8 && y + down < 8; right++,down++) {
+        if (isNthBitSet(board->whitePieces,  (y + down) * 8 + x + right))
+            break;
+        setNthBit(&legalSquares,  (y + down) * 8 + x + right);
+        if (isNthBitSet(board->blackPieces,  (y + down) * 8 + x + right))
+            break;
+    }
+    //down left 
+    for (int left = 1,down = 1; x - left >= 0 && y + down < 8; left++,down++) {
+        if (isNthBitSet(board->whitePieces,  (y + down) * 8 + x - left))
+            break;
+        setNthBit(&legalSquares,  (y + down) * 8 + x - left);
+        if (isNthBitSet(board->blackPieces,  (y + down) * 8 + x - left))
+            break;
+    }
+
+    return legalSquares;
+}
+void blackBishopLegalMoves(Board* board, int x, int y) {
+    uint64_t legalSquares = 0x0000000000000000ULL;
+    //up right
+    for (int right = 1,up = 1; x + right < 8 && y - up >= 0; right++,up++) {
+        if (isNthBitSet(board->blackPieces,  (y - up) * 8 + x + right))
+            break;
+        setNthBit(&legalSquares,  (y - up) * 8 + x + right);
+        if (isNthBitSet(board->whitePieces,  (y - up) * 8 + x + right))
+            break;
+    }
+    //up left
+    for (int left = 1,up = 1; x - left >= 0 && y - up >= 0; left++,up++) {
+        if (isNthBitSet(board->blackPieces,  (y - up) * 8 + x - left))
+            break;
+        setNthBit(&legalSquares,  (y - up) * 8 + x - left);
+        if (isNthBitSet(board->whitePieces,  (y - up) * 8 + x -left))
+            break;
+    }
+    //down right 
+    for (int right = 1,down = 1; x + right < 8 && y + down < 8; right++,down++) {
+        if (isNthBitSet(board->blackPieces,  (y + down) * 8 + x + right))
+            break;
+        setNthBit(&legalSquares,  (y + down) * 8 + x + right);
+        if (isNthBitSet(board->whitePieces,  (y + down) * 8 + x + right))
+            break;
+    }
+    //down left 
+    for (int left = 1,down = 1; x - left >= 0 && y + down < 8; left++,down++) {
+        if (isNthBitSet(board->blackPieces,  (y + down) * 8 + x - left))
+            break;
+        setNthBit(&legalSquares,  (y + down) * 8 + x - left);
+        if (isNthBitSet(board->whitePieces,  (y + down) * 8 + x - left))
+            break;
+    }
+
+    return legalSquares;
+}
+
 
 int main(){
     Board chessBoard;
     initBoard(&chessBoard);
     printBoard(&chessBoard);
-    uint64_t j = whiteRookLegalMoves(&chessBoard,0,2);
-    printUint64(j);
-    printf("%llu\n",j);
     return 0;
 }
 
