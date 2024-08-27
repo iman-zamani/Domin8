@@ -81,7 +81,7 @@ void initBoard(Board* board) {
 }
 
 void printBoard(Board* board){
-    for (int i=0;i<64;i++){
+    for (int i=63;i>=0;i--){
         if(isNthBitSet(board->whitePieces,i)){
             if(isNthBitSet(board->whitePawn,i)){
                 printf("P ");
@@ -129,56 +129,17 @@ void printBoard(Board* board){
 
 
         else {
-            printf("  ");
+            printf(". ");
         }
-        if (i % 8 == 7){
+        if (i % 8 == 0){
                 printf("\n");
             }
-    }
-}
-void printBoard2(Board* board) {
-    for (int rank = 7; rank >= 0; rank--) {  // Loop from rank 8 to rank 1
-        for (int file = 0; file < 8; file++) {  // Loop from file a to file h
-            int i = rank * 8 + file;  // Calculate the bit index
-            if (isNthBitSet(board->whitePieces, i)) {
-                if (isNthBitSet(board->whitePawn, i)) {
-                    printf("P ");
-                } else if (isNthBitSet(board->whiteQueen, i)) {
-                    printf("Q ");
-                } else if (isNthBitSet(board->whiteRook, i)) {
-                    printf("R ");
-                } else if (isNthBitSet(board->whiteKnight, i)) {
-                    printf("N ");
-                } else if (isNthBitSet(board->whiteBishop, i)) {
-                    printf("B ");
-                } else if (isNthBitSet(board->whiteKing, i)) {
-                    printf("K ");
-                }
-            } else if (isNthBitSet(board->blackPieces, i)) {
-                if (isNthBitSet(board->blackPawn, i)) {
-                    printf("p ");
-                } else if (isNthBitSet(board->blackQueen, i)) {
-                    printf("q ");
-                } else if (isNthBitSet(board->blackRook, i)) {
-                    printf("r ");
-                } else if (isNthBitSet(board->blackKnight, i)) {
-                    printf("n ");
-                } else if (isNthBitSet(board->blackBishop, i)) {
-                    printf("b ");
-                } else if (isNthBitSet(board->blackKing, i)) {
-                    printf("k ");
-                }
-            } else {
-                printf(". ");
-            }
-        }
-        printf("\n");
     }
 }
 
 int main(){
     Board chessBoard;
     initBoard(&chessBoard);
-    printBoard2(&chessBoard);
+    printBoard(&chessBoard);
     return 0;
 }
