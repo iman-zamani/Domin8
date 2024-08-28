@@ -119,6 +119,7 @@ void printUint64(uint64_t status){
     }
     printf("----------------\n");
 }
+
 void printBoard(Board* board){
     for (int i=63;i>=0;i--){
         if(isNthBitSet(board->whitePieces,i)){
@@ -175,8 +176,6 @@ void printBoard(Board* board){
             }
     }
 }
-
-
 
 /**
  * it will return the legal moves that this pawn can do (pseudo legal move).
@@ -395,8 +394,71 @@ uint64_t blackBishopLegalMoves(Board* board, int x, int y) {
 uint64_t whiteQueenLegalMoves(Board* board, int x, int y){
     return whiteRookLegalMoves(board,x,y) | whiteBishopLegalMoves(board,x,y);
 }
+
 uint64_t blackQueenLegalMoves(Board* board, int x, int y){
     return blackRookLegalMoves(board,x,y) | blackBishopLegalMoves(board,x,y);
+}
+uint64_t whiteKingLegalMoves(Board *board, int x, int y) {
+    uint64_t legalSquares = 0x0000000000000000ULL;
+
+    // loop over all adjacent squares
+    for (int j = -1; j <= 1; ++j) {
+        for (int i = -1; i <= 1; ++i) {
+            // skip the pice itself
+            if (i == 0 && j == 0) continue;
+
+            int newX = x + i;
+            int newY = y + j;
+
+            // boundary check
+            if (newX < 0 || newX > 7 || newY < 0 || newY > 7)
+                continue;
+            
+
+            int index = newY * 8 + newX;
+
+            // check if there is a same color pice in that square 
+            if (isNthBitSet(board->whitePieces, index))
+                continue;
+
+            // If the square is not occupied by a same color piece, it is a legal move
+            setNthBit(&legalSquares, index);
+        }
+    }
+
+    return legalSquares;
+}
+
+uint64_t blackKingLegalMoves(Board *board, int x, int y) {
+    uint64_t legalSquares = 0x0000000000000000ULL;
+
+    // loop over all adjacent squares
+    for (int j = -1; j <= 1; ++j) {
+        for (int i = -1; i <= 1; ++i) {
+            // skip the pice itself
+            if (i == 0 && j == 0) continue;
+
+            int newX = x + i;
+            int newY = y + j;
+
+            // boundary check
+            if (newX < 0 || newX > 7 || newY < 0 || newY > 7)
+                continue;
+            
+
+            int index = newY * 8 + newX;
+
+            // check if there is a same color pice in that square 
+            if (isNthBitSet(board->blackPieces, index))
+                continue;
+
+            // If the square is not occupied by a same color piece, it is a legal move
+            setNthBit(&legalSquares, index);
+        }
+    }
+    
+
+    return legalSquares;
 }
 int main(){
     Board chessBoard;
