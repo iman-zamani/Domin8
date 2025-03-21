@@ -1,3 +1,3 @@
-# All-Or-Nothing Chess engine (Under Development)
+# Domin8 (Under Development)
 
-All-Or-Nothing Chess Engine (Beta Version) A UCI-compatible chess engine crafted in C for dynamic, aggressive gameplay. Designed to minimize draws, this engine strives for decisive outcomes, pushing for either a win or loss in every game. Its unique algorithms enhance aggressive tactics, making it an ideal choice for enthusiastic players and competitive environments looking to challenge traditional playing styles. Perfect for those seeking to transform every chess match into a thrilling battle!
+Domin8 Chess Engine (Beta Version) A UCI-compatible chess engine crafted in C for dynamic, aggressive gameplay. Designed to minimize draws, this engine strives for decisive outcomes, pushing for either a win or loss in every game. Its unique algorithms enhance aggressive tactics, making it an ideal choice for enthusiastic players and competitive environments looking to challenge traditional playing styles. Perfect for those seeking to transform every chess match into a thrilling battle!
