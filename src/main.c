@@ -153,9 +153,6 @@ struct Move{
 }typedef Move;
 
 
-void initEngine(){
-    
-}
 Move *legalWhitePawnMoves(Board *board){
     Move* whitePawnMoves = NULL;
     whitePawnMoves = (Move*)malloc(32 * sizeof(Move));  
