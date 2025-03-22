@@ -130,7 +130,7 @@ void printBoard(Board *board){
                     printf(" .");  
                     break;
                 default:
-                    printf("\nERROR, invalid FEN string\n");
+                    perror("\nERROR, invalid FEN string\n");
                     exit(EXIT_FAILURE);
                     break;       
             }
@@ -142,6 +142,7 @@ void printBoard(Board *board){
 struct Move{
     int startSquare;
     int targetSquare;
+    bool capture;
     bool enPassant;
     bool pawnMovingTwoSquares;
     bool castle;
@@ -151,23 +152,135 @@ struct Move{
     bool promotionToBishop;
 }typedef Move;
 
-Move* createMoveArray() {
-    Move* moves = (Move*)calloc(1234, sizeof(Move));  
-    if (moves == NULL) {
-        perror("Memory allocation failed");
+
+void initEngine(){
+    
+}
+Move *legalWhitePawnMoves(Board *board){
+    Move* whitePawnMoves = NULL;
+    whitePawnMoves = (Move*)malloc(32 * sizeof(Move));  
+    if (!whitePawnMoves) {
+        perror("Memory allocation failed for white pawn legal moves");
         exit(EXIT_FAILURE);
     }
-    return moves;
-}
+    // clearing the move buffer 
+    for (int k = 0;k<32 && whitePawnMoves[k].startSquare != -1;k++){
+        whitePawnMoves[k].startSquare = -1;
+        whitePawnMoves[k].targetSquare = -1;
+        whitePawnMoves[k].enPassant = FALSE;
+        whitePawnMoves[k].pawnMovingTwoSquares = FALSE;
+        whitePawnMoves[k].castle = FALSE;
+        whitePawnMoves[k].promotionToQueen = FALSE;
+        whitePawnMoves[k].promotionToKnight = FALSE;
+        whitePawnMoves[k].promotionToRook = FALSE;
+        whitePawnMoves[k].promotionToBishop = FALSE;
+        whitePawnMoves[k].capture = FALSE;
 
+    }
+    int index = 0;
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == WHITE_PAWN){
+                // single pawn move
+                if (i > 0 && board->squares[i-1][j] == EMPTY){
+                    whitePawnMoves[index].startSquare = i*8 + j;
+                    whitePawnMoves[index].targetSquare = (i-1)*8 + j;
+                    index++;
+                }
+                // double pawn move
+                if (i == 6 && board->squares[i-2][j] == EMPTY && board->squares[i-1][j] == EMPTY){
+                    whitePawnMoves[index].pawnMovingTwoSquares = TRUE;
+                    whitePawnMoves[index].startSquare = i*8 + j;
+                    whitePawnMoves[index].targetSquare = (i-2)*8 + j;
+                    index++;
+                }
+                // right capture 
+                if (i > 0 && j < 7 && board->squares[i-1][j+1] < EMPTY){
+                    whitePawnMoves[index].capture = TRUE;
+                    whitePawnMoves[index].startSquare = i*8 + j;
+                    whitePawnMoves[index].targetSquare = (i-1)*8 + j + 1;
+                    index++;
+                }
+                // left capture 
+                if (i > 0 && j > 0 && board->squares[i-1][j-1] < EMPTY){
+                    whitePawnMoves[index].capture = TRUE;
+                    whitePawnMoves[index].startSquare = i*8 + j;
+                    whitePawnMoves[index].targetSquare = (i-1)*8 + j - 1;
+                    index++;
+                }
+            }
+        }
+    }
+    return whitePawnMoves;
+}
+Move *legalBlackPawnMoves(Board *board){
+    Move* blackPawnMoves = NULL;
+    blackPawnMoves = (Move*)malloc(32 * sizeof(Move));  
+    if (!blackPawnMoves) {
+        perror("Memory allocation failed for black pawn legal moves");
+        exit(EXIT_FAILURE);
+    }
+    // clearing the move buffer 
+    for (int k = 0;k<32 && blackPawnMoves[k].startSquare != -1;k++){
+        blackPawnMoves[k].startSquare = -1;
+        blackPawnMoves[k].targetSquare = -1;
+        blackPawnMoves[k].enPassant = FALSE;
+        blackPawnMoves[k].pawnMovingTwoSquares = FALSE;
+        blackPawnMoves[k].castle = FALSE;
+        blackPawnMoves[k].promotionToQueen = FALSE;
+        blackPawnMoves[k].promotionToKnight = FALSE;
+        blackPawnMoves[k].promotionToRook = FALSE;
+        blackPawnMoves[k].promotionToBishop = FALSE;
+        blackPawnMoves[k].capture = FALSE;
+
+    }
+    int index = 0;
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == BLACK_PAWN){
+                // single pawn move
+                if (i < 7 && board->squares[i+1][j] == EMPTY){
+                    blackPawnMoves[index].startSquare = i*8 + j;
+                    blackPawnMoves[index].targetSquare = (i+1)*8 + j;
+                    index++;
+                }
+                // double pawn move
+                if (i == 1 && board->squares[i+2][j] == EMPTY && board->squares[i+1][j] == EMPTY){
+                    blackPawnMoves[index].pawnMovingTwoSquares = TRUE;
+                    blackPawnMoves[index].startSquare = i*8 + j;
+                    blackPawnMoves[index].targetSquare = (i+2)*8 + j;
+                    index++;
+                }
+                // right capture 
+                if (i < 7 && j < 7 && board->squares[i+1][j+1] < EMPTY){
+                    blackPawnMoves[index].capture = TRUE;
+                    blackPawnMoves[index].startSquare = i*8 + j;
+                    blackPawnMoves[index].targetSquare = (i+1)*8 + j + 1;
+                    index++;
+                }
+                // left capture 
+                if (i < 7 && j > 0 && board->squares[i+1][j-1] < EMPTY){
+                    blackPawnMoves[index].capture = TRUE;
+                    blackPawnMoves[index].startSquare = i*8 + j;
+                    blackPawnMoves[index].targetSquare = (i+1)*8 + j - 1;
+                    index++;
+                }
+            }
+        }
+    }
+    return blackPawnMoves;
+}
 int main(){
-    Move* moves = createMoveArray();
-    printf("%d",sizeof(moves));
     Board board;
     printf("Enter a FEN string: ");
     char string[100];
     scanf("%s",string);
     readFenIntoBoard(&board,string);
     printBoard(&board);
+    printf("legal moves :\n");
+    Move * whitePawnMoves = legalWhitePawnMoves(&board);
+    for (int k = 0;k<32 && whitePawnMoves[k].startSquare != -1;k++){
+        printf("start square: %d\ttargetSquare: %d\n",whitePawnMoves[k].startSquare, whitePawnMoves[k].targetSquare);
+    }
     return 0;
 }
