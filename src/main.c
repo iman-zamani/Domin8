@@ -23,6 +23,10 @@
 
 
 // directions and boundaries
+#define UP --iIndex
+#define DOWN ++iIndex
+#define RIGHT ++jIndex
+#define LEFT --jIndex
 
 
 struct Board{
@@ -151,6 +155,68 @@ struct Move{
     bool promotionToRook;
     bool promotionToBishop;
 }typedef Move;
+struct MoveList{
+    size_t count;     // how many moves are stored
+    size_t capacity;  // total allocated number of moves we can have 
+    Move* moves;
+}typedef MoveList;
+void initMoveList(MoveList * list){
+    list->count = 0;
+    list->capacity = 32;
+    list->moves = NULL;
+    list->moves = (Move*)malloc(list->capacity * sizeof(Move));  
+    if (!list->moves) {
+        perror("Memory allocation failed list moves");
+        exit(EXIT_FAILURE);
+    }
+    // clearing the move buffer 
+    for (int k = 0;k<list->capacity ;k++){
+        list->moves[k].startSquare = -1;
+        list->moves[k].targetSquare = -1;
+        list->moves[k].enPassant = FALSE;
+        list->moves[k].pawnMovingTwoSquares = FALSE;
+        list->moves[k].castle = FALSE;
+        list->moves[k].promotionToQueen = FALSE;
+        list->moves[k].promotionToKnight = FALSE;
+        list->moves[k].promotionToRook = FALSE;
+        list->moves[k].promotionToBishop = FALSE;
+        list->moves[k].capture = FALSE;
+
+    }
+}
+void ensureMoveCapacity(MoveList* list) {
+    if (list->count >= list->capacity) {
+        size_t new_capacity = list->capacity * 2;
+        if (new_capacity == 0) new_capacity = 32;  
+        Move* temp = realloc(list->moves, new_capacity * sizeof(Move));
+        if (temp != NULL) {
+            list->moves = temp;
+            
+            for (int k = list->capacity ;k<new_capacity ;k++){
+                list->moves[k].startSquare = -1;
+                list->moves[k].targetSquare = -1;
+                list->moves[k].enPassant = FALSE;
+                list->moves[k].pawnMovingTwoSquares = FALSE;
+                list->moves[k].castle = FALSE;
+                list->moves[k].promotionToQueen = FALSE;
+                list->moves[k].promotionToKnight = FALSE;
+                list->moves[k].promotionToRook = FALSE;
+                list->moves[k].promotionToBishop = FALSE;
+                list->moves[k].capture = FALSE;
+        
+            }
+            list->capacity = new_capacity;
+        } 
+        else {
+            perror("Failed to realloc memory in ensureMoveCapacity function");
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+void addMove(MoveList* list, Move move) {
+    ensureMoveCapacity(list);
+    list->moves[list->count++] = move;
+}
 
 
 Move *legalWhitePawnMoves(Board *board){
@@ -267,6 +333,190 @@ Move *legalBlackPawnMoves(Board *board){
     }
     return blackPawnMoves;
 }
+MoveList legalWhiteRookMoves(Board *board){
+    MoveList whiteRookMoves;
+    initMoveList(&whiteRookMoves);
+    
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == WHITE_ROOK){
+                int iIndex = i;
+                int jIndex = j;
+                // how many we can go up 
+                while(iIndex >0 && board->squares [UP][j] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][j] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteRookMoves,temp);
+                    }
+                }
+                // how many we can go down 
+                iIndex = i;
+                jIndex = j;
+                while(iIndex < 7 && board->squares [DOWN][j] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteRookMoves,temp);
+                    }
+                }
+                // how many we can go right 
+                iIndex = i;
+                jIndex = j;
+                while(jIndex < 7 && board->squares [i][RIGHT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteRookMoves,temp);
+                    }
+                }
+                // how many we can go left 
+                iIndex = i;
+                jIndex = j;
+                while(jIndex > 0 && board->squares [i][LEFT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteRookMoves,temp);
+                    }
+                }
+            }
+        }
+    }
+    return whiteRookMoves;
+}
+MoveList legalBlackRookMoves(Board *board){
+    MoveList blackRookMoves;
+    initMoveList(&blackRookMoves);
+    
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == BLACK_ROOK){
+                int iIndex = i;
+                int jIndex = j;
+                // how many we can go up 
+                while(iIndex >0 && board->squares [UP][j] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][j] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackRookMoves,temp);
+                    }
+                }
+                // how many we can go down 
+                iIndex = i;
+                jIndex = j;
+                while(iIndex < 7 && board->squares [DOWN][j] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackRookMoves,temp);
+                    }
+                }
+                // how many we can go right 
+                iIndex = i;
+                jIndex = j;
+                while(jIndex < 7 && board->squares [i][RIGHT] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackRookMoves,temp);
+                    }
+                }
+                // how many we can go left 
+                iIndex = i;
+                jIndex = j;
+                while(jIndex > 0 && board->squares [i][LEFT] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackRookMoves,temp);
+                        break;
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackRookMoves,temp);
+                    }
+                }
+            }
+        }
+    }
+    return blackRookMoves;
+}
 int main(){
     Board board;
     printf("Enter a FEN string: ");
@@ -275,9 +525,9 @@ int main(){
     readFenIntoBoard(&board,string);
     printBoard(&board);
     printf("legal moves :\n");
-    Move * whitePawnMoves = legalWhitePawnMoves(&board);
-    for (int k = 0;k<32 && whitePawnMoves[k].startSquare != -1;k++){
-        printf("start square: %d\ttargetSquare: %d\n",whitePawnMoves[k].startSquare, whitePawnMoves[k].targetSquare);
+    MoveList whiteRookMoves = legalBlackRookMoves(&board);
+    for (int k = 0;k<whiteRookMoves.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",whiteRookMoves.moves[k].startSquare, whiteRookMoves.moves[k].targetSquare);
     }
     return 0;
 }
