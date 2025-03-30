@@ -1053,6 +1053,347 @@ MoveList legalBlackQueenMoves(Board *board){
     return blackQueenMoves;
 }
 
+MoveList legalWhiteKingMoves(Board *board){
+    MoveList whiteKingMoves;
+    initMoveList(&whiteKingMoves);
+    
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == WHITE_KING){
+                // row and column moves -------------------------------------------------------------------
+                int iIndex = i;
+                int jIndex = j;
+                // how many we can go up 
+                if(iIndex >0 && board->squares [UP][j] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][j] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // how many we can go down 
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && board->squares [DOWN][j] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // how many we can go right 
+                iIndex = i;
+                jIndex = j;
+                if(jIndex < 7 && board->squares [i][RIGHT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // how many we can go left 
+                iIndex = i;
+                jIndex = j;
+                if(jIndex > 0 && board->squares [i][LEFT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // moves that are like bishop------------------------------------------------------------
+                iIndex = i;
+                jIndex = j;
+                // how many we can go up right
+                if(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT]<= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // how many we can go down left
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // how many we can go down right 
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // how many we can go up left 
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                }
+                // there is only one white king 
+                return whiteKingMoves;
+            }
+        }
+    }
+    return whiteKingMoves;
+}
+
+MoveList legalBlackKingMoves(Board *board){
+    MoveList blackKingMoves;
+    initMoveList(&blackKingMoves);
+    
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == BLACK_KING){
+                // row and column moves -------------------------------------------------------------------
+                int iIndex = i;
+                int jIndex = j;
+                // how many we can go up 
+                if(iIndex >0 && board->squares [UP][j] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][j] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // how many we can go down 
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && board->squares [DOWN][j] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // how many we can go right 
+                iIndex = i;
+                jIndex = j;
+                if(jIndex < 7 && board->squares [i][RIGHT] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // how many we can go left 
+                iIndex = i;
+                jIndex = j;
+                if(jIndex > 0 && board->squares [i][LEFT] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // moves that are like bishop------------------------------------------------------------
+                iIndex = i;
+                jIndex = j;
+                // how many we can go up right
+                if(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT]>= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // how many we can go down left
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // how many we can go down right 
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // how many we can go up left 
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] >= EMPTY){
+                    
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKingMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKingMoves,temp);
+                    }
+                }
+                // there is only one black king 
+                return blackKingMoves;
+            }
+        }
+    }
+    return blackKingMoves;
+}
+
+
+
 int main(){
     Board board;
     printf("Enter a FEN string: ");
@@ -1061,7 +1402,7 @@ int main(){
     readFenIntoBoard(&board,string);
     printBoard(&board);
     printf("legal moves :\n");
-    MoveList whiteRookMoves = legalWhiteQueenMoves(&board);
+    MoveList whiteRookMoves = legalBlackKingMoves(&board);
     for (int k = 0;k<whiteRookMoves.count;k++){
         printf("start square: %d\ttargetSquare: %d\n",whiteRookMoves.moves[k].startSquare, whiteRookMoves.moves[k].targetSquare);
     }
