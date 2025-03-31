@@ -1743,3 +1743,14 @@ int main(){
     }
     return 0;
 }
+
+// for converting pseudo legal moves to legal move :
+// concept of a pined pice or better say pice movement should not cuse reviling any attacks to the king 
+// the ability to castle 
+// if the rook moves we should not be able to castle on that side 
+// if the king moves we should be able to castle at all 
+// en passant should be added 
+// pawn promotion should be added 
+// if the rook gets captured , we should not be able to castle on that side 
+// concept of check 
+// concept of mate 
