@@ -32,6 +32,10 @@
 struct Board{
     //         [row][column]
     int squares[8][8] ;
+    bool whiteShortCastle;
+    bool whiteLongCastle;
+    bool blackShortCastle;
+    bool blackLongCastle;
 }typedef Board;
 void readFenIntoBoard(Board * board ,char * FEN){
     int fenIndex = 0;
@@ -88,6 +92,11 @@ void readFenIntoBoard(Board * board ,char * FEN){
         }
         fenIndex++;
     }
+    // this should be changed so it will read the fen instead of putting true for all of them
+    board->blackLongCastle = TRUE;
+    board->blackShortCastle = TRUE;
+    board->whiteLongCastle = TRUE;
+    board->whiteShortCastle = TRUE;
 }
 void printBoard(Board *board){
     //board->squares[2][2] = BLACK_BISHOP;
@@ -1068,6 +1077,22 @@ MoveList legalWhiteKingMoves(Board *board){
                         addMove(&whiteKingMoves,temp);
                     }
                 }
+                // short castling 
+                iIndex = i;
+                jIndex = j;
+                    if (board->whiteShortCastle == TRUE && i == 7 && j == 4 &&  board->squares [iIndex][RIGHT] == EMPTY &&  board->squares [iIndex][RIGHT] == EMPTY){
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                        temp.shortCastle = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
+                // long castling 
+                iIndex = i;
+                jIndex = j;
+                    if (board->whiteLongCastle == TRUE && i == 7 && j == 4 &&  board->squares [iIndex][LEFT] == EMPTY &&  board->squares [iIndex][LEFT] == EMPTY){
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                        temp.longCastle = TRUE;
+                        addMove(&whiteKingMoves,temp);
+                    }
                 // there is only one white king 
                 return whiteKingMoves;
             }
@@ -1198,6 +1223,22 @@ MoveList legalBlackKingMoves(Board *board){
                         addMove(&blackKingMoves,temp);
                     }
                 }
+                 // short castling 
+                 iIndex = i;
+                 jIndex = j;
+                if (board->blackShortCastle == TRUE && i == 0 && j == 4 &&  board->squares [iIndex][RIGHT] == EMPTY &&  board->squares [iIndex][RIGHT] == EMPTY){
+                    Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                    temp.shortCastle = TRUE;
+                    addMove(&blackKingMoves,temp);
+                }
+                 // long castling 
+                 iIndex = i;
+                 jIndex = j;
+                if (board->blackLongCastle == TRUE && i == 0 && j == 4 && board->squares[iIndex][LEFT] == EMPTY && board->squares[iIndex][LEFT] == EMPTY){
+                    Move temp = createTempMove(BLACK_KING, (i * 8 + j), (iIndex * 8 + jIndex), TRUE);
+                    temp.longCastle = TRUE;
+                    addMove(&blackKingMoves, temp);
+                 }
                 // there is only one black king 
                 return blackKingMoves;
             }
