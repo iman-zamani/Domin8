@@ -229,9 +229,23 @@ MoveList legalWhitePawnMoves(Board *board){
             if (board->squares[i][j] == WHITE_PAWN){
                 int iIndex = i;
                 int jIndex = j;
-                // single pawn move
+                // single pawn move that would not cause promotion 
                 if (i >1 && board->squares[UP][j] == EMPTY){
                     Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    addMove(&whitePawnMoves,temp);
+                }
+                // single pawn move that would cause promotion 
+                iIndex = i;
+                jIndex = j;
+                if (i == 1 && board->squares[UP][j] == EMPTY){
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.promotionPieceType = WHITE_QUEEN;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_ROOK;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_KNIGHT;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_BISHOP;
                     addMove(&whitePawnMoves,temp);
                 }
                 // double pawn move
@@ -245,15 +259,43 @@ MoveList legalWhitePawnMoves(Board *board){
                 // right capture 
                 iIndex = i;
                 jIndex = j;
-                if (i > 0 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
+                if (i > 1 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
                     Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                    addMove(&whitePawnMoves,temp);
+                }
+                // promotion with a right capture
+                iIndex = i;
+                jIndex = j;
+                if (i == 1 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.promotionPieceType = WHITE_QUEEN;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_ROOK;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_KNIGHT;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_BISHOP;
                     addMove(&whitePawnMoves,temp);
                 }
                 // left capture 
                 iIndex = i;
                 jIndex = j;
-                if (i > 0 && j > 0 && board->squares[UP][LEFT] < EMPTY){
+                if (i > 1 && j > 0 && board->squares[UP][LEFT] < EMPTY){
                     Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                    addMove(&whitePawnMoves,temp);
+                }
+                // promotion with a left capture
+                iIndex = i;
+                jIndex = j;
+                if (i == 1 && j > 0 && board->squares[UP][LEFT] < EMPTY){
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.promotionPieceType = WHITE_QUEEN;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_ROOK;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_KNIGHT;
+                    addMove(&whitePawnMoves,temp);
+                    temp.promotionPieceType = WHITE_BISHOP;
                     addMove(&whitePawnMoves,temp);
                 }
             }
@@ -270,8 +312,22 @@ MoveList legalBlackPawnMoves(Board *board){
                 int iIndex = i;
                 int jIndex = j;
                 // single pawn move
-                if (i < 7 && board->squares[DOWN][j] == EMPTY){
+                if (i < 6 && board->squares[DOWN][j] == EMPTY){
                     Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    addMove(&blackPawnMoves,temp);
+                }
+                // single pawn move that would cause promotion 
+                iIndex = i;
+                jIndex = j;
+                if (i == 6 && board->squares[DOWN][j] == EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.promotionPieceType = BLACK_QUEEN;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_ROOK;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_KNIGHT;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_BISHOP;
                     addMove(&blackPawnMoves,temp);
                 }
                 // double pawn move
@@ -285,15 +341,43 @@ MoveList legalBlackPawnMoves(Board *board){
                 // right capture 
                 iIndex = i;
                 jIndex = j;
-                if (i < 7 && j < 7 && board->squares[DOWN][RIGHT] < EMPTY){
+                if (i < 6 && j < 7 && board->squares[DOWN][RIGHT] < EMPTY){
                     Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                    addMove(&blackPawnMoves,temp);
+                }
+                // right capture  promotion 
+                iIndex = i;
+                jIndex = j;
+                if (i == 6 && j < 7 && board->squares[DOWN][RIGHT] < EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.promotionPieceType = BLACK_QUEEN;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_ROOK;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_KNIGHT;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_BISHOP;
                     addMove(&blackPawnMoves,temp);
                 }
                 // left capture
                 iIndex = i;
                 jIndex = j; 
-                if (i < 7 && j > 0 && board->squares[DOWN][LEFT] < EMPTY){
+                if (i < 6 && j > 0 && board->squares[DOWN][LEFT] < EMPTY){
                     Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
+                    addMove(&blackPawnMoves,temp);
+                }
+                // left capture promotion 
+                iIndex = i;
+                jIndex = j;
+                if (i == 6 && j > 0 && board->squares[DOWN][LEFT] < EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.promotionPieceType = BLACK_QUEEN;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_ROOK;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_KNIGHT;
+                    addMove(&blackPawnMoves,temp);
+                    temp.promotionPieceType = BLACK_BISHOP;
                     addMove(&blackPawnMoves,temp);
                 }
             }
@@ -1457,7 +1541,6 @@ int main(){
 // if the rook moves we should not be able to castle on that side 
 // if the king moves we should be able to castle at all 
 // en passant should be added 
-// pawn promotion should be added *********************************
 // if the rook gets captured , we should not be able to castle on that side 
 // concept of check 
 // concept of mate 
