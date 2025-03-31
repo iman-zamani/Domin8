@@ -219,120 +219,102 @@ void addMove(MoveList* list, Move move) {
 }
 
 
-Move *legalWhitePawnMoves(Board *board){
-    Move* whitePawnMoves = NULL;
-    whitePawnMoves = (Move*)malloc(32 * sizeof(Move));  
-    if (!whitePawnMoves) {
-        perror("Memory allocation failed for white pawn legal moves");
-        exit(EXIT_FAILURE);
-    }
-    // clearing the move buffer 
-    for (int k = 0;k<32 && whitePawnMoves[k].startSquare != -1;k++){
-        whitePawnMoves[k].startSquare = -1;
-        whitePawnMoves[k].targetSquare = -1;
-        whitePawnMoves[k].enPassant = FALSE;
-        whitePawnMoves[k].pawnMovingTwoSquares = FALSE;
-        whitePawnMoves[k].castle = FALSE;
-        whitePawnMoves[k].promotionToQueen = FALSE;
-        whitePawnMoves[k].promotionToKnight = FALSE;
-        whitePawnMoves[k].promotionToRook = FALSE;
-        whitePawnMoves[k].promotionToBishop = FALSE;
-        whitePawnMoves[k].capture = FALSE;
-
-    }
-    int index = 0;
+MoveList legalWhitePawnMoves(Board *board){
+    MoveList whitePawnMoves;
+    initMoveList(&whitePawnMoves);
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             if (board->squares[i][j] == WHITE_PAWN){
+                int iIndex = i;
+                int jIndex = j;
                 // single pawn move
-                if (i > 0 && board->squares[i-1][j] == EMPTY){
-                    whitePawnMoves[index].startSquare = i*8 + j;
-                    whitePawnMoves[index].targetSquare = (i-1)*8 + j;
-                    index++;
+                if (i > 0 && board->squares[UP][j] == EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&whitePawnMoves,temp);
                 }
                 // double pawn move
-                if (i == 6 && board->squares[i-2][j] == EMPTY && board->squares[i-1][j] == EMPTY){
-                    whitePawnMoves[index].pawnMovingTwoSquares = TRUE;
-                    whitePawnMoves[index].startSquare = i*8 + j;
-                    whitePawnMoves[index].targetSquare = (i-2)*8 + j;
-                    index++;
+                iIndex = i;
+                jIndex = j;
+                if (i == 6 && board->squares[UP][j] == EMPTY && board->squares[UP][j] == EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&whitePawnMoves,temp);
                 }
                 // right capture 
-                if (i > 0 && j < 7 && board->squares[i-1][j+1] < EMPTY){
-                    whitePawnMoves[index].capture = TRUE;
-                    whitePawnMoves[index].startSquare = i*8 + j;
-                    whitePawnMoves[index].targetSquare = (i-1)*8 + j + 1;
-                    index++;
+                iIndex = i;
+                jIndex = j;
+                if (i > 0 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&whitePawnMoves,temp);
                 }
                 // left capture 
-                if (i > 0 && j > 0 && board->squares[i-1][j-1] < EMPTY){
-                    whitePawnMoves[index].capture = TRUE;
-                    whitePawnMoves[index].startSquare = i*8 + j;
-                    whitePawnMoves[index].targetSquare = (i-1)*8 + j - 1;
-                    index++;
+                iIndex = i;
+                jIndex = j;
+                if (i > 0 && j > 0 && board->squares[UP][LEFT] < EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&whitePawnMoves,temp);
                 }
             }
         }
     }
     return whitePawnMoves;
 }
-Move *legalBlackPawnMoves(Board *board){
-    Move* blackPawnMoves = NULL;
-    blackPawnMoves = (Move*)malloc(32 * sizeof(Move));  
-    if (!blackPawnMoves) {
-        perror("Memory allocation failed for black pawn legal moves");
-        exit(EXIT_FAILURE);
-    }
-    // clearing the move buffer 
-    for (int k = 0;k<32 && blackPawnMoves[k].startSquare != -1;k++){
-        blackPawnMoves[k].startSquare = -1;
-        blackPawnMoves[k].targetSquare = -1;
-        blackPawnMoves[k].enPassant = FALSE;
-        blackPawnMoves[k].pawnMovingTwoSquares = FALSE;
-        blackPawnMoves[k].castle = FALSE;
-        blackPawnMoves[k].promotionToQueen = FALSE;
-        blackPawnMoves[k].promotionToKnight = FALSE;
-        blackPawnMoves[k].promotionToRook = FALSE;
-        blackPawnMoves[k].promotionToBishop = FALSE;
-        blackPawnMoves[k].capture = FALSE;
-
-    }
-    int index = 0;
+MoveList legalBlackPawnMoves(Board *board){
+    MoveList blackPawnMoves;
+    initMoveList(&blackPawnMoves);
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             if (board->squares[i][j] == BLACK_PAWN){
+                int iIndex = i;
+                int jIndex = j;
                 // single pawn move
-                if (i < 7 && board->squares[i+1][j] == EMPTY){
-                    blackPawnMoves[index].startSquare = i*8 + j;
-                    blackPawnMoves[index].targetSquare = (i+1)*8 + j;
-                    index++;
+                if (i < 7 && board->squares[UP][j] == EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&blackPawnMoves,temp);
                 }
                 // double pawn move
-                if (i == 1 && board->squares[i+2][j] == EMPTY && board->squares[i+1][j] == EMPTY){
-                    blackPawnMoves[index].pawnMovingTwoSquares = TRUE;
-                    blackPawnMoves[index].startSquare = i*8 + j;
-                    blackPawnMoves[index].targetSquare = (i+2)*8 + j;
-                    index++;
+                iIndex = i;
+                jIndex = j;
+                if (i == 1 && board->squares[UP][j] == EMPTY && board->squares[UP][j] == EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&blackPawnMoves,temp);
                 }
                 // right capture 
-                if (i < 7 && j < 7 && board->squares[i+1][j+1] < EMPTY){
-                    blackPawnMoves[index].capture = TRUE;
-                    blackPawnMoves[index].startSquare = i*8 + j;
-                    blackPawnMoves[index].targetSquare = (i+1)*8 + j + 1;
-                    index++;
+                iIndex = i;
+                jIndex = j;
+                if (i < 7 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&blackPawnMoves,temp);
                 }
-                // left capture 
-                if (i < 7 && j > 0 && board->squares[i+1][j-1] < EMPTY){
-                    blackPawnMoves[index].capture = TRUE;
-                    blackPawnMoves[index].startSquare = i*8 + j;
-                    blackPawnMoves[index].targetSquare = (i+1)*8 + j - 1;
-                    index++;
+                // left capture
+                iIndex = i;
+                jIndex = j; 
+                if (i < 7 && j > 0 && board->squares[UP][LEFT] < EMPTY){
+                    Move temp;
+                    temp.startSquare = i*8 + j;
+                    temp.targetSquare = iIndex*8 + jIndex;
+                    addMove(&blackPawnMoves,temp);
                 }
             }
         }
     }
     return blackPawnMoves;
 }
+
+
 MoveList legalWhiteRookMoves(Board *board){
     MoveList whiteRookMoves;
     initMoveList(&whiteRookMoves);
