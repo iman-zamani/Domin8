@@ -1392,7 +1392,360 @@ MoveList legalBlackKingMoves(Board *board){
     return blackKingMoves;
 }
 
-
+MoveList legalWhiteKnightMoves(Board *board){
+    MoveList whiteKnightMoves;
+    initMoveList(&whiteKnightMoves);
+    
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == WHITE_KNIGHT){
+                // row and column moves -------------------------------------------------------------------
+                int iIndex = i;
+                int jIndex = j;
+                // a night has 8 possible moves at most 
+                // if you imagine it like a circle the will line up to clock positions 
+                // if we move clock wise it will be like this :
+                // 1 2 4 5 7 8 10 11, I will define each so it will be easier to work with
+                #define ONE [iIndex-=2][jIndex+=1]
+                #define TWO [iIndex-=1][jIndex+=2]
+                #define FOUR [iIndex+=1][jIndex+=2]
+                #define FIVE [iIndex+=2][jIndex+=1]
+                #define SEVEN [iIndex+=2][jIndex-=1]
+                #define EIGHT [iIndex+=1][jIndex-=2]
+                #define TEN [iIndex-=1][jIndex-=2]
+                #define ELEVEN [iIndex-=2][jIndex-=1]
+                // ------
+                if(iIndex >1 && jIndex<7 && board->squares ONE <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][j] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // -------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex >0 && jIndex <6 && board->squares TWO <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // -----
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex < 6 && board->squares FOUR <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // --------
+                iIndex = i;
+                jIndex = j;
+                if( iIndex<6 &&jIndex < 7 && board->squares FIVE <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // ---------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex <6 && jIndex > 0 && board->squares SEVEN<= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // ---------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex > 1 && board->squares EIGHT <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // ------------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 0 && jIndex > 1 && board->squares TEN <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+                // ----------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 1 && jIndex > 0 && board->squares ELEVEN <= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] < EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&whiteKnightMoves,temp);
+                    }
+                }
+            }
+        }
+    }
+    return whiteKnightMoves;
+}
+MoveList legalBlackKnightMoves(Board *board){
+    MoveList blackKnightMoves;
+    initMoveList(&blackKnightMoves);
+    
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == BLACK_KNIGHT){
+                // row and column moves -------------------------------------------------------------------
+                int iIndex = i;
+                int jIndex = j;
+                // a night has 8 possible moves at most 
+                // if you imagine it like a circle the will line up to clock positions 
+                // if we move clock wise it will be like this :
+                // 1 2 4 5 7 8 10 11, I will define each so it will be easier to work with
+                #define ONE [iIndex-=2][jIndex+=1]
+                #define TWO [iIndex-=1][jIndex+=2]
+                #define FOUR [iIndex+=1][jIndex+=2]
+                #define FIVE [iIndex+=2][jIndex+=1]
+                #define SEVEN [iIndex+=2][jIndex-=1]
+                #define EIGHT [iIndex+=1][jIndex-=2]
+                #define TEN [iIndex-=1][jIndex-=2]
+                #define ELEVEN [iIndex-=2][jIndex-=1]
+                // ------
+                if(iIndex >1 && jIndex<7 && board->squares ONE >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][j] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // -------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex >0 && jIndex <6 && board->squares TWO >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // -----
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex < 6 && board->squares FOUR >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // --------
+                iIndex = i;
+                jIndex = j;
+                if( iIndex<6 &&jIndex < 7 && board->squares FIVE >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // ---------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex <6 && jIndex > 0 && board->squares SEVEN >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // ---------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex > 1 && board->squares EIGHT >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // ------------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 0 && jIndex > 1 && board->squares TEN >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+                // ----------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 1 && jIndex > 0 && board->squares ELEVEN >= EMPTY){
+                    // capture
+                    if (board->squares [iIndex][jIndex] > EMPTY){
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        temp.capture = TRUE;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                    else{
+                        Move temp;
+                        temp.startSquare = i*8 + j;
+                        temp.targetSquare = iIndex*8 + jIndex;
+                        addMove(&blackKnightMoves,temp);
+                    }
+                }
+            }
+        }
+    }
+    return blackKnightMoves;
+}
 
 int main(){
     Board board;
@@ -1402,7 +1755,7 @@ int main(){
     readFenIntoBoard(&board,string);
     printBoard(&board);
     printf("legal moves :\n");
-    MoveList whiteRookMoves = legalBlackKingMoves(&board);
+    MoveList whiteRookMoves = legalWhiteKnightMoves(&board);
     for (int k = 0;k<whiteRookMoves.count;k++){
         printf("start square: %d\ttargetSquare: %d\n",whiteRookMoves.moves[k].startSquare, whiteRookMoves.moves[k].targetSquare);
     }
