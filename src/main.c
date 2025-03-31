@@ -144,16 +144,15 @@ void printBoard(Board *board){
     return ;
 }
 struct Move{
+    int pieceType;
     int startSquare;
     int targetSquare;
-    bool capture;
-    bool enPassant;
+    bool isCapture;
+    bool enPassant; // yet to be added 
     bool pawnMovingTwoSquares;
-    bool castle;
-    bool promotionToQueen;
-    bool promotionToKnight;
-    bool promotionToRook;
-    bool promotionToBishop;
+    bool shortCastle;
+    bool longCastle;
+    int promotionPieceType;
 }typedef Move;
 struct MoveList{
     size_t count;     // how many moves are stored
@@ -169,20 +168,6 @@ void initMoveList(MoveList * list){
         perror("Memory allocation failed list moves");
         exit(EXIT_FAILURE);
     }
-    // clearing the move buffer 
-    for (int k = 0;k<list->capacity ;k++){
-        list->moves[k].startSquare = -1;
-        list->moves[k].targetSquare = -1;
-        list->moves[k].enPassant = FALSE;
-        list->moves[k].pawnMovingTwoSquares = FALSE;
-        list->moves[k].castle = FALSE;
-        list->moves[k].promotionToQueen = FALSE;
-        list->moves[k].promotionToKnight = FALSE;
-        list->moves[k].promotionToRook = FALSE;
-        list->moves[k].promotionToBishop = FALSE;
-        list->moves[k].capture = FALSE;
-
-    }
 }
 void ensureMoveCapacity(MoveList* list) {
     if (list->count >= list->capacity) {
@@ -191,20 +176,6 @@ void ensureMoveCapacity(MoveList* list) {
         Move* temp = realloc(list->moves, new_capacity * sizeof(Move));
         if (temp != NULL) {
             list->moves = temp;
-            
-            for (int k = list->capacity ;k<new_capacity ;k++){
-                list->moves[k].startSquare = -1;
-                list->moves[k].targetSquare = -1;
-                list->moves[k].enPassant = FALSE;
-                list->moves[k].pawnMovingTwoSquares = FALSE;
-                list->moves[k].castle = FALSE;
-                list->moves[k].promotionToQueen = FALSE;
-                list->moves[k].promotionToKnight = FALSE;
-                list->moves[k].promotionToRook = FALSE;
-                list->moves[k].promotionToBishop = FALSE;
-                list->moves[k].capture = FALSE;
-        
-            }
             list->capacity = new_capacity;
         } 
         else {
@@ -218,6 +189,37 @@ void addMove(MoveList* list, Move move) {
     list->moves[list->count++] = move;
 }
 
+Move createTempMove(int tPieceType, int tStartSquare, int tTargetSquare, bool tIsCapture){
+    Move temp;
+   temp.startSquare = tStartSquare;
+   temp.targetSquare = tTargetSquare;
+   temp.pieceType = tPieceType;
+   temp.isCapture = tIsCapture;
+   // castle checking 
+   if (tPieceType == WHITE_KING && tStartSquare == 60 && tTargetSquare == 62){
+    temp.shortCastle = TRUE;
+   }
+   else if (tPieceType == WHITE_KING && tStartSquare == 60 && tTargetSquare == 58){
+    temp.longCastle = TRUE;
+   }
+   else if (tPieceType == BLACK_KING && tStartSquare == 4 && tTargetSquare == 6){
+    temp.shortCastle = TRUE;
+   }
+   else if (tPieceType == BLACK_KING && tStartSquare == 4 && tTargetSquare == 2){
+    temp.longCastle = TRUE;
+   }
+   else {
+    temp.shortCastle = FALSE;
+    temp.longCastle = FALSE;
+   }
+   // if it needs modifications for the below atributes 
+   // they should be handled by the legal moves finder function itself 
+    temp.enPassant = FALSE;
+    temp.pawnMovingTwoSquares = FALSE;
+    temp.promotionPieceType = EMPTY;
+    
+   return temp;
+}
 
 MoveList legalWhitePawnMoves(Board *board){
     MoveList whitePawnMoves;
@@ -228,37 +230,30 @@ MoveList legalWhitePawnMoves(Board *board){
                 int iIndex = i;
                 int jIndex = j;
                 // single pawn move
-                if (i > 0 && board->squares[UP][j] == EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                if (i >1 && board->squares[UP][j] == EMPTY){
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                     addMove(&whitePawnMoves,temp);
                 }
                 // double pawn move
                 iIndex = i;
                 jIndex = j;
                 if (i == 6 && board->squares[UP][j] == EMPTY && board->squares[UP][j] == EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.pawnMovingTwoSquares = TRUE;
                     addMove(&whitePawnMoves,temp);
                 }
                 // right capture 
                 iIndex = i;
                 jIndex = j;
                 if (i > 0 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&whitePawnMoves,temp);
                 }
                 // left capture 
                 iIndex = i;
                 jIndex = j;
                 if (i > 0 && j > 0 && board->squares[UP][LEFT] < EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                    Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&whitePawnMoves,temp);
                 }
             }
@@ -275,37 +270,30 @@ MoveList legalBlackPawnMoves(Board *board){
                 int iIndex = i;
                 int jIndex = j;
                 // single pawn move
-                if (i < 7 && board->squares[UP][j] == EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                if (i < 7 && board->squares[DOWN][j] == EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                     addMove(&blackPawnMoves,temp);
                 }
                 // double pawn move
                 iIndex = i;
                 jIndex = j;
-                if (i == 1 && board->squares[UP][j] == EMPTY && board->squares[UP][j] == EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                if (i == 1 && board->squares[DOWN][j] == EMPTY && board->squares[DOWN][j] == EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
+                    temp.pawnMovingTwoSquares = TRUE;
                     addMove(&blackPawnMoves,temp);
                 }
                 // right capture 
                 iIndex = i;
                 jIndex = j;
-                if (i < 7 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                if (i < 7 && j < 7 && board->squares[DOWN][RIGHT] < EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&blackPawnMoves,temp);
                 }
                 // left capture
                 iIndex = i;
                 jIndex = j; 
-                if (i < 7 && j > 0 && board->squares[UP][LEFT] < EMPTY){
-                    Move temp;
-                    temp.startSquare = i*8 + j;
-                    temp.targetSquare = iIndex*8 + jIndex;
+                if (i < 7 && j > 0 && board->squares[DOWN][LEFT] < EMPTY){
+                    Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&blackPawnMoves,temp);
                 }
             }
@@ -328,17 +316,12 @@ MoveList legalWhiteRookMoves(Board *board){
                 while(iIndex >0 && board->squares [UP][j] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteRookMoves,temp);
                     }
                 }
@@ -348,17 +331,12 @@ MoveList legalWhiteRookMoves(Board *board){
                 while(iIndex < 7 && board->squares [DOWN][j] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteRookMoves,temp);
                     }
                 }
@@ -368,17 +346,12 @@ MoveList legalWhiteRookMoves(Board *board){
                 while(jIndex < 7 && board->squares [i][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteRookMoves,temp);
                     }
                 }
@@ -388,17 +361,12 @@ MoveList legalWhiteRookMoves(Board *board){
                 while(jIndex > 0 && board->squares [i][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteRookMoves,temp);
                     }
                 }
@@ -420,17 +388,12 @@ MoveList legalBlackRookMoves(Board *board){
                 while(iIndex >0 && board->squares [UP][j] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackRookMoves,temp);
                     }
                 }
@@ -440,17 +403,12 @@ MoveList legalBlackRookMoves(Board *board){
                 while(iIndex < 7 && board->squares [DOWN][j] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackRookMoves,temp);
                     }
                 }
@@ -460,17 +418,12 @@ MoveList legalBlackRookMoves(Board *board){
                 while(jIndex < 7 && board->squares [i][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackRookMoves,temp);
                     }
                 }
@@ -480,17 +433,12 @@ MoveList legalBlackRookMoves(Board *board){
                 while(jIndex > 0 && board->squares [i][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackRookMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_ROOK,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackRookMoves,temp);
                     }
                 }
@@ -513,17 +461,12 @@ MoveList legalWhiteBishopMoves(Board *board){
                 while(iIndex >0 && jIndex<7 && board->squares [UP][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteBishopMoves,temp);
                     }
                 }
@@ -533,17 +476,12 @@ MoveList legalWhiteBishopMoves(Board *board){
                 while(iIndex<7 && jIndex > 0 && board->squares [DOWN][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteBishopMoves,temp);
                     }
                 }
@@ -553,17 +491,12 @@ MoveList legalWhiteBishopMoves(Board *board){
                 while(iIndex<7 && jIndex < 7 && board->squares [DOWN][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteBishopMoves,temp);
                     }
                 }
@@ -573,17 +506,12 @@ MoveList legalWhiteBishopMoves(Board *board){
                 while(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteBishopMoves,temp);
                     }
                 }
@@ -605,17 +533,12 @@ MoveList legalBlackBishopMoves(Board *board){
                 while(iIndex >0 && jIndex<7 && board->squares [UP][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackBishopMoves,temp);
                     }
                 }
@@ -625,17 +548,12 @@ MoveList legalBlackBishopMoves(Board *board){
                 while(iIndex < 7 && jIndex>0 && board->squares [DOWN][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackBishopMoves,temp);
                     }
                 }
@@ -645,17 +563,12 @@ MoveList legalBlackBishopMoves(Board *board){
                 while(iIndex<7 && jIndex < 7 && board->squares [DOWN][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackBishopMoves,temp);
                     }
                 }
@@ -665,17 +578,12 @@ MoveList legalBlackBishopMoves(Board *board){
                 while(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackBishopMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_BISHOP,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackBishopMoves,temp);
                     }
                 }
@@ -699,17 +607,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(iIndex >0 && board->squares [UP][j] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -719,17 +622,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(iIndex < 7 && board->squares [DOWN][j] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -739,17 +637,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(jIndex < 7 && board->squares [i][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -759,17 +652,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(jIndex > 0 && board->squares [i][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -780,17 +668,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT]<= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -800,17 +683,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -820,17 +698,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -840,17 +713,12 @@ MoveList legalWhiteQueenMoves(Board *board){
                 while(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteQueenMoves,temp);
                     }
                 }
@@ -874,17 +742,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(iIndex >0 && board->squares [UP][j] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -894,17 +757,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(iIndex < 7 && board->squares [DOWN][j] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -914,17 +772,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(jIndex < 7 && board->squares [i][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -934,17 +787,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(jIndex > 0 && board->squares [i][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -955,17 +803,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT]>= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -975,17 +818,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -995,17 +833,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -1015,17 +848,12 @@ MoveList legalBlackQueenMoves(Board *board){
                 while(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackQueenMoves,temp);
                         break;
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_QUEEN,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackQueenMoves,temp);
                     }
                 }
@@ -1049,16 +877,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(iIndex >0 && board->squares [UP][j] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1068,16 +891,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(iIndex < 7 && board->squares [DOWN][j] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1087,16 +905,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(jIndex < 7 && board->squares [i][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1106,16 +919,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(jIndex > 0 && board->squares [i][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1126,16 +934,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT]<= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1145,16 +948,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1164,16 +962,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1183,16 +976,11 @@ MoveList legalWhiteKingMoves(Board *board){
                 if(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKingMoves,temp);
                     }
                 }
@@ -1218,16 +1006,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(iIndex >0 && board->squares [UP][j] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1237,16 +1020,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(iIndex < 7 && board->squares [DOWN][j] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1256,16 +1034,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(jIndex < 7 && board->squares [i][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1275,16 +1048,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(jIndex > 0 && board->squares [i][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1295,16 +1063,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT]>= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1314,16 +1077,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1333,16 +1091,11 @@ MoveList legalBlackKingMoves(Board *board){
                 if(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1353,16 +1106,11 @@ MoveList legalBlackKingMoves(Board *board){
                     
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKingMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KING,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKingMoves,temp);
                     }
                 }
@@ -1400,16 +1148,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex >1 && jIndex<7 && board->squares ONE <= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1419,16 +1162,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex >0 && jIndex <6 && board->squares TWO <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1438,16 +1176,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex < 7 && jIndex < 6 && board->squares FOUR <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1457,16 +1190,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if( iIndex<6 &&jIndex < 7 && board->squares FIVE <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1476,16 +1204,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex <6 && jIndex > 0 && board->squares SEVEN<= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1495,16 +1218,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex < 7 && jIndex > 1 && board->squares EIGHT <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1514,16 +1232,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex > 0 && jIndex > 1 && board->squares TEN <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1533,16 +1246,11 @@ MoveList legalWhiteKnightMoves(Board *board){
                 if(iIndex > 1 && jIndex > 0 && board->squares ELEVEN <= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] < EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&whiteKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(WHITE_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&whiteKnightMoves,temp);
                     }
                 }
@@ -1577,16 +1285,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex >1 && jIndex<7 && board->squares ONE >= EMPTY){
                     // capture
                     if (board->squares [iIndex][j] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1596,16 +1299,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex >0 && jIndex <6 && board->squares TWO >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1615,16 +1313,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex < 7 && jIndex < 6 && board->squares FOUR >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1634,16 +1327,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if( iIndex<6 &&jIndex < 7 && board->squares FIVE >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1653,16 +1341,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex <6 && jIndex > 0 && board->squares SEVEN >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1672,16 +1355,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex < 7 && jIndex > 1 && board->squares EIGHT >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1691,16 +1369,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex > 0 && jIndex > 1 && board->squares TEN >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1710,16 +1383,11 @@ MoveList legalBlackKnightMoves(Board *board){
                 if(iIndex > 1 && jIndex > 0 && board->squares ELEVEN >= EMPTY){
                     // capture
                     if (board->squares [iIndex][jIndex] > EMPTY){
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
-                        temp.capture = TRUE;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                         addMove(&blackKnightMoves,temp);
                     }
                     else{
-                        Move temp;
-                        temp.startSquare = i*8 + j;
-                        temp.targetSquare = iIndex*8 + jIndex;
+                        Move temp = createTempMove(BLACK_KNIGHT,(i*8 + j),(iIndex*8 + jIndex),FALSE);
                         addMove(&blackKnightMoves,temp);
                     }
                 }
@@ -1737,10 +1405,49 @@ int main(){
     readFenIntoBoard(&board,string);
     printBoard(&board);
     printf("legal moves :\n");
-    MoveList whiteRookMoves = legalWhiteKnightMoves(&board);
-    for (int k = 0;k<whiteRookMoves.count;k++){
-        printf("start square: %d\ttargetSquare: %d\n",whiteRookMoves.moves[k].startSquare, whiteRookMoves.moves[k].targetSquare);
+    int num = 0;
+    MoveList temp = legalWhitePawnMoves(&board);
+    for (int k = 0;k<temp.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",temp.moves[k].startSquare, temp.moves[k].targetSquare);
     }
+    num += temp.count;
+    free(temp.moves);
+    ///-------------------------
+    temp = legalWhiteRookMoves(&board);
+    for (int k = 0;k<temp.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",temp.moves[k].startSquare, temp.moves[k].targetSquare);
+    }
+    num += temp.count;
+    free(temp.moves);
+    ///-------------------------
+    temp = legalWhiteKnightMoves(&board);
+    for (int k = 0;k<temp.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",temp.moves[k].startSquare, temp.moves[k].targetSquare);
+    }
+    num += temp.count;
+    free(temp.moves);
+    ///-------------------------
+    temp = legalWhiteBishopMoves(&board);
+    for (int k = 0;k<temp.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",temp.moves[k].startSquare, temp.moves[k].targetSquare);
+    }
+    num += temp.count;
+    free(temp.moves);
+    ///-------------------------
+    temp = legalWhiteQueenMoves(&board);
+    for (int k = 0;k<temp.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",temp.moves[k].startSquare, temp.moves[k].targetSquare);
+    }
+    num += temp.count;
+    free(temp.moves);
+    ///-------------------------
+    temp = legalWhiteKingMoves(&board);
+    for (int k = 0;k<temp.count;k++){
+        printf("start square: %d\ttargetSquare: %d\n",temp.moves[k].startSquare, temp.moves[k].targetSquare);
+    }
+    num += temp.count;
+    free(temp.moves);
+    printf("number of legal moves for white: %d\n",num);
     return 0;
 }
 
@@ -1750,7 +1457,7 @@ int main(){
 // if the rook moves we should not be able to castle on that side 
 // if the king moves we should be able to castle at all 
 // en passant should be added 
-// pawn promotion should be added 
+// pawn promotion should be added *********************************
 // if the rook gets captured , we should not be able to castle on that side 
 // concept of check 
 // concept of mate 
