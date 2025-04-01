@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
-
+#include <string.h>
 #define TRUE 1
 #define FALSE 0
 // values for filling squares 
@@ -36,12 +36,23 @@ struct Board{
     bool whiteLongCastle;
     bool blackShortCastle;
     bool blackLongCastle;
+    bool isWhiteTurn;
+    int targetEnPassantSquare;
+    int halfMovesFromLastCaptureOrPawnMove;
+    int numFullMoves;
 }typedef Board;
 void readFenIntoBoard(Board * board ,char * FEN){
     int fenIndex = 0;
-    for (int i=0;i<8;i++){
-        for (int j=0;j<8;j++){
+    bool exitLoop = FALSE;
+    for (int i=0;i<8 && !exitLoop ;i++){
+        for (int j=0;j<8 && !exitLoop;j++){
             char c = FEN[fenIndex];
+            // exiting the loop 
+            if (c == ' '){
+                exitLoop = true;
+                fenIndex++;
+                break;
+            }
             if (c > '0' && c < '9'){
                 for (int k=0;k<(c-'0');k++){
                     board->squares[i][j+k] = EMPTY;
@@ -92,11 +103,70 @@ void readFenIntoBoard(Board * board ,char * FEN){
         }
         fenIndex++;
     }
-    // this should be changed so it will read the fen instead of putting true for all of them
-    board->blackLongCastle = TRUE;
-    board->blackShortCastle = TRUE;
-    board->whiteLongCastle = TRUE;
-    board->whiteShortCastle = TRUE;
+    // whose turn is it to move 
+    if (FEN[fenIndex] == 'w'){
+        board->isWhiteTurn = TRUE;
+    }
+    else if (FEN[fenIndex] == 'b'){
+        board->isWhiteTurn = FALSE;
+    }
+    else {
+        fprintf(stderr,"ERROR: failed to read the fen string\n");
+        exit(EXIT_FAILURE);
+    }
+    fenIndex++;
+    if (FEN[fenIndex] != ' '){
+        fprintf(stderr,"ERROR: failed to read the fen string\n");
+        exit(EXIT_FAILURE);
+    }
+    // castling 
+    board->blackLongCastle = FALSE;
+    board->blackShortCastle = FALSE;
+    board->whiteLongCastle = FALSE;
+    board->whiteShortCastle = FALSE;
+    while (FEN[++fenIndex]!= ' '){
+        switch (FEN[fenIndex])
+        {
+        case 'K':
+            board->whiteShortCastle = TRUE;
+            break;
+        case 'Q':
+            board->whiteLongCastle = TRUE;
+            break;
+        case 'k':
+            board->blackShortCastle = TRUE;
+            break;
+        case 'q':
+            board->blackLongCastle = TRUE;
+            break;
+        default:
+            fprintf(stderr,"ERROR: failed to read the fen string\n");
+            exit(EXIT_FAILURE);
+            break;
+        }
+    }
+    // en passant
+    if (FEN[fenIndex + 1] == '-') {
+        board->targetEnPassantSquare = -1; 
+        fenIndex+=2;
+    } else {
+        int jIndex =  FEN[++fenIndex] - 'a';       
+        int iIndex = '8' - FEN[++fenIndex] ;
+        board->targetEnPassantSquare = iIndex * 8 + jIndex;
+    }
+    board->halfMovesFromLastCaptureOrPawnMove = 0;
+    while (FEN[++fenIndex] != ' '){
+        if (FEN[fenIndex] < '0' || FEN[fenIndex] > '9') break;
+        board->halfMovesFromLastCaptureOrPawnMove = 
+        board->halfMovesFromLastCaptureOrPawnMove * 10 + (FEN[fenIndex] - '0');
+    }
+    board->numFullMoves = 0;
+    while (FEN[++fenIndex] != '\0'){
+        if (FEN[fenIndex] < '0' || FEN[fenIndex] > '9') break;
+        board->numFullMoves = 
+        board->numFullMoves * 10 + (FEN[fenIndex] - '0');
+    }
+    
 }
 void printBoard(Board *board){
     //board->squares[2][2] = BLACK_BISHOP;
@@ -1526,7 +1596,8 @@ int main(){
     Board board;
     printf("Enter a FEN string: ");
     char string[100];
-    scanf("%s",string);
+    fgets(string, sizeof(string), stdin);
+    string[strcspn(string, "\n")] = 0;
     readFenIntoBoard(&board,string);
     printBoard(&board);
     printf("legal moves :\n");
@@ -1578,7 +1649,7 @@ int main(){
 
 // for converting pseudo legal moves to legal move :
 // concept of a pined pice or better say pice movement should not cuse reviling any attacks to the king 
-// the ability to castle 
+
 // if the rook moves we should not be able to castle on that side 
 // if the king moves we should be able to castle at all 
 // en passant should be added 
