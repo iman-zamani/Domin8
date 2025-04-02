@@ -1324,9 +1324,6 @@ MoveList legalWhiteKnightMoves(Board *board){
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             if (board->squares[i][j] == WHITE_KNIGHT){
-                // row and column moves -------------------------------------------------------------------
-                int iIndex = i;
-                int jIndex = j;
                 // a night has 8 possible moves at most 
                 // if you imagine it like a circle the will line up to clock positions 
                 // if we move clock wise it will be like this :
@@ -1339,6 +1336,9 @@ MoveList legalWhiteKnightMoves(Board *board){
                 #define EIGHT [iIndex+=1][jIndex-=2]
                 #define TEN [iIndex-=1][jIndex-=2]
                 #define ELEVEN [iIndex-=2][jIndex-=1]
+                int iIndex = i;
+                int jIndex = j;
+                
                 // ------
                 if(iIndex >1 && jIndex<7 && board->squares ONE <= EMPTY){
                     // capture
@@ -1461,9 +1461,6 @@ MoveList legalBlackKnightMoves(Board *board){
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             if (board->squares[i][j] == BLACK_KNIGHT){
-                // row and column moves -------------------------------------------------------------------
-                int iIndex = i;
-                int jIndex = j;
                 // a night has 8 possible moves at most 
                 // if you imagine it like a circle the will line up to clock positions 
                 // if we move clock wise it will be like this :
@@ -1476,6 +1473,8 @@ MoveList legalBlackKnightMoves(Board *board){
                 #define EIGHT [iIndex+=1][jIndex-=2]
                 #define TEN [iIndex-=1][jIndex-=2]
                 #define ELEVEN [iIndex-=2][jIndex-=1]
+                int iIndex = i;
+                int jIndex = j;
                 // ------
                 if(iIndex >1 && jIndex<7 && board->squares ONE >= EMPTY){
                     // capture
@@ -1592,6 +1591,199 @@ MoveList legalBlackKnightMoves(Board *board){
     return blackKnightMoves;
 }
 
+bool boardIsCheck(Board *board){
+    int king = EMPTY;
+    int rook = EMPTY;
+    int queen = EMPTY;
+    int bishop = EMPTY;
+    int knight = EMPTY;
+    int pawn = EMPTY;
+    int relative = 1;
+    if (board->isWhiteTurn){
+        king = WHITE_KING;
+        // they should be the opposite 
+        rook = BLACK_ROOK;
+        queen = BLACK_QUEEN;
+        bishop = BLACK_BISHOP;
+        knight = BLACK_KNIGHT;
+        pawn = BLACK_PAWN;
+    }
+    else {
+        king = BLACK_KING;
+        // they should be the opposite 
+        rook = WHITE_ROOK;
+        queen = WHITE_QUEEN;
+        bishop = WHITE_BISHOP;
+        knight = WHITE_KNIGHT;
+        pawn = WHITE_PAWN;
+        relative = -1;
+    }
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            if (board->squares[i][j] == king){
+                // sliding pieces ---------------------------------------------------------------------------------
+                int iIndex = i;
+                int jIndex = j;
+                // how many we can go up 
+                while(iIndex >0 && board->squares [UP][j] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == rook){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // how many we can go down 
+                iIndex = i;
+                jIndex = j;
+                while(iIndex < 7 && board->squares [DOWN][j] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == rook){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // how many we can go right 
+                iIndex = i;
+                jIndex = j;
+                while(jIndex < 7 && board->squares [i][RIGHT] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == rook){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // how many we can go left 
+                iIndex = i;
+                jIndex = j;
+                while(jIndex > 0 && board->squares [i][LEFT] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == rook){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // moves that are like bishop --------
+                iIndex = i;
+                jIndex = j;
+                // how many we can go up right
+                while(iIndex >0 && jIndex<7 && board->squares[UP][RIGHT] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == bishop){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // how many we can go down left
+                iIndex = i;
+                jIndex = j;
+                while(iIndex < 7 && jIndex > 0 && board->squares [DOWN][LEFT] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == bishop){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // how many we can go down right 
+                iIndex = i;
+                jIndex = j;
+                while(iIndex < 7 && jIndex < 7 && board->squares [DOWN][RIGHT] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == bishop){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // how many we can go up left 
+                iIndex = i;
+                jIndex = j;
+                while(iIndex > 0 && jIndex > 0 && board->squares [UP][LEFT] * relative <= EMPTY){
+                    if (board->squares [iIndex][jIndex] == queen || board->squares [iIndex][jIndex] == bishop){
+                        return TRUE;
+                    } 
+                    else if (board->squares [iIndex][jIndex] * relative < EMPTY ){
+                        break;
+                    } 
+                }
+                // knight moves --------------------------------------------------------------------
+                #define ONE [iIndex-=2][jIndex+=1]
+                #define TWO [iIndex-=1][jIndex+=2]
+                #define FOUR [iIndex+=1][jIndex+=2]
+                #define FIVE [iIndex+=2][jIndex+=1]
+                #define SEVEN [iIndex+=2][jIndex-=1]
+                #define EIGHT [iIndex+=1][jIndex-=2]
+                #define TEN [iIndex-=1][jIndex-=2]
+                #define ELEVEN [iIndex-=2][jIndex-=1]
+
+                iIndex = i;
+                jIndex = j;
+                
+                // ------
+                if(iIndex >1 && jIndex<7 && board->squares ONE == knight){
+                    return TRUE;
+                }
+                // -------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex >0 && jIndex <6 && board->squares TWO == knight){
+                    return TRUE;
+                }
+                // -----
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex < 6 && board->squares FOUR == knight){
+                    return TRUE;
+                }
+                // --------
+                iIndex = i;
+                jIndex = j;
+                if( iIndex<6 &&jIndex < 7 && board->squares FIVE == knight){
+                    return TRUE;
+                }
+                // ---------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex <6 && jIndex > 0 && board->squares SEVEN== knight){
+                    return TRUE;
+                }
+                // ---------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex < 7 && jIndex > 1 && board->squares EIGHT == knight){
+                    return TRUE;
+                }
+                // ------------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 0 && jIndex > 1 && board->squares TEN == knight){
+                    return TRUE;
+                }
+                // ----------------
+                iIndex = i;
+                jIndex = j;
+                if(iIndex > 1 && jIndex > 0 && board->squares ELEVEN == knight){
+                    return TRUE;
+                }
+                // pawn checks ---------------------------------------------------------------------
+                // white 
+                if (board->isWhiteTurn && (board->squares[i-1][j-1] == pawn || board->squares[i-1][j+1] == pawn)){
+                    return TRUE;
+                }
+                // black 
+                if (!board->isWhiteTurn && (board->squares[i+1][j-1] == pawn || board->squares[i+1][j+1] == pawn)){
+                    return TRUE;
+                }
+                return FALSE;
+            }
+        }
+    }
+}
 int main(){
     Board board;
     printf("Enter a FEN string: ");
@@ -1644,6 +1836,14 @@ int main(){
     num += temp.count;
     free(temp.moves);
     printf("number of legal moves for white: %d\n",num);
+    printf("------------------------------------------\n");
+    if (boardIsCheck(&board)){
+        printf("board is in check\n");
+    }
+    else {
+        printf("board is not in check\n");
+    }
+    
     return 0;
 }
 
