@@ -338,7 +338,7 @@ MoveList legalWhitePawnMoves(Board *board){
                 // right capture 
                 iIndex = i;
                 jIndex = j;
-                if (i > 1 && j < 7 && board->squares[UP][RIGHT] < EMPTY){
+                if ((i > 1 && j < 7 && board->squares[UP][RIGHT] < EMPTY) || (i == 3 && (iIndex*8 + jIndex) == board->targetEnPassantSquare)){
                     Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&whitePawnMoves,temp);
                 }
@@ -359,7 +359,7 @@ MoveList legalWhitePawnMoves(Board *board){
                 // left capture 
                 iIndex = i;
                 jIndex = j;
-                if (i > 1 && j > 0 && board->squares[UP][LEFT] < EMPTY){
+                if ((i > 1 && j > 0 && board->squares[UP][LEFT] < EMPTY)  || (i == 3 && (iIndex*8 + jIndex) == board->targetEnPassantSquare)){
                     Move temp = createTempMove(WHITE_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&whitePawnMoves,temp);
                 }
@@ -420,7 +420,7 @@ MoveList legalBlackPawnMoves(Board *board){
                 // right capture 
                 iIndex = i;
                 jIndex = j;
-                if (i < 6 && j < 7 && board->squares[DOWN][RIGHT] < EMPTY){
+                if ((i < 6 && j < 7 && board->squares[DOWN][RIGHT] < EMPTY)  || (i == 4 && (iIndex*8 + jIndex) == board->targetEnPassantSquare)){
                     Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&blackPawnMoves,temp);
                 }
@@ -441,7 +441,7 @@ MoveList legalBlackPawnMoves(Board *board){
                 // left capture
                 iIndex = i;
                 jIndex = j; 
-                if (i < 6 && j > 0 && board->squares[DOWN][LEFT] < EMPTY){
+                if ((i < 6 && j > 0 && board->squares[DOWN][LEFT] < EMPTY)  || (i == 4 && (iIndex*8 + jIndex) == board->targetEnPassantSquare)){
                     Move temp = createTempMove(BLACK_PAWN,(i*8 + j),(iIndex*8 + jIndex),TRUE);
                     addMove(&blackPawnMoves,temp);
                 }
@@ -1650,9 +1650,9 @@ int main(){
 // for converting pseudo legal moves to legal move :
 // concept of a pined pice or better say pice movement should not cuse reviling any attacks to the king 
 
-// if the rook moves we should not be able to castle on that side 
-// if the king moves we should be able to castle at all 
-// en passant should be added 
+// if the rook moves we should not be able to castle on that side (it should be added in apply move function)
+// if the king moves we should be able to castle at all (it should be added in apply move function)
 // if the rook gets captured , we should not be able to castle on that side 
 // concept of check 
 // concept of mate 
+// if a pawn moves or a capture happens with should set the counter to zero (it should be added in apply move function)
