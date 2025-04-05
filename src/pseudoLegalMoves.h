@@ -1,10 +1,4 @@
 #pragma once 
-#include <stdio.h>
-#include <stdlib.h>
-#include "define.h"
-#include "board.h"
-#include "move.h"
-#include "moveList.h"
 
 MoveList pseudoLegalWhitePawnMoves(Board *board);
 MoveList pseudoLegalBlackPawnMoves(Board *board);

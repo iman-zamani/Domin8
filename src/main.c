@@ -4,7 +4,7 @@
 #include "moveList.h"
 #include "pseudoLegalMoves.h"
 
-void main(void){
+int main(void){
     Board board;
     printf("Enter a FEN string: ");
     char string[100];

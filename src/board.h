@@ -1,5 +1,4 @@
 #pragma once 
-#include "define.h"
 typedef struct Board{
     //         [row][column]
     int squares[8][8] ;

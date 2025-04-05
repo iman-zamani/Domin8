@@ -1,5 +1,4 @@
 #pragma once 
-#include "define.h"
 typedef struct Move{
     int pieceType;
     int startSquare;
