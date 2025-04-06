@@ -6,6 +6,7 @@
 MoveList pseudoLegalWhitePawnMoves(Board *board){
     MoveList whitePawnMoves;
     initMoveList(&whitePawnMoves);
+    assert (!BIT_BOARD && "remove the nested loops when bit board is ready\n");
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             if (board->squares[i][j] == WHITE_PAWN){
@@ -1158,7 +1159,7 @@ MoveList pseudoLegalWhiteKnightMoves(Board *board){
 MoveList pseudoLegalBlackKnightMoves(Board *board){
     MoveList blackKnightMoves;
     initMoveList(&blackKnightMoves);
-    
+    assert (!BIT_BOARD && "remove the nested loops when bit board is ready\n");
     for (int i=0;i<8;i++){
         for (int j=0;j<8;j++){
             if (board->squares[i][j] == BLACK_KNIGHT){
@@ -1290,4 +1291,72 @@ MoveList pseudoLegalBlackKnightMoves(Board *board){
         }
     }
     return blackKnightMoves;
+}
+
+
+MoveList allPseudoLegalWhiteMoves(Board *board){
+    MoveList whiteMoves;
+    initMoveList(&whiteMoves);
+
+    MoveList pawn = pseudoLegalWhitePawnMoves(board);
+    MoveList rook = pseudoLegalWhiteRookMoves(board);
+    MoveList knight = pseudoLegalWhiteKnightMoves(board);
+    MoveList bishop = pseudoLegalWhiteBishopMoves(board);
+    MoveList queen = pseudoLegalWhiteQueenMoves(board);
+    MoveList king = pseudoLegalWhiteKingMoves(board);
+
+    /// merge them together 
+    assert (!MOVE_ORDER && "we need to optimize witch moves we are calculating\n");
+    for (int i=0;i<pawn.count;i++){
+        addMove(&whiteMoves,pawn.moves[i]);
+    }
+    for (int i=0;i<rook.count;i++){
+        addMove(&whiteMoves,rook.moves[i]);
+    }
+    for (int i=0;i<knight.count;i++){
+        addMove(&whiteMoves,knight.moves[i]);
+    }
+    for (int i=0;i<bishop.count;i++){
+        addMove(&whiteMoves,bishop.moves[i]);
+    }
+    for (int i=0;i<queen.count;i++){
+        addMove(&whiteMoves,queen.moves[i]);
+    }
+    for (int i=0;i<king.count;i++){
+        addMove(&whiteMoves,king.moves[i]);
+    }
+    return whiteMoves;
+}
+MoveList allPseudoLegalBlackMoves(Board *board){
+    MoveList blackMoves;
+    initMoveList(&blackMoves);
+
+    MoveList pawn = pseudoLegalBlackPawnMoves(board);
+    MoveList rook = pseudoLegalBlackRookMoves(board);
+    MoveList knight = pseudoLegalBlackKnightMoves(board);
+    MoveList bishop = pseudoLegalBlackBishopMoves(board);
+    MoveList queen = pseudoLegalBlackQueenMoves(board);
+    MoveList king = pseudoLegalBlackKingMoves(board);
+
+    /// merge them together 
+    assert (!MOVE_ORDER && "we need to optimize witch moves we are calculating\n");
+    for (int i=0;i<pawn.count;i++){
+        addMove(&blackMoves,pawn.moves[i]);
+    }
+    for (int i=0;i<rook.count;i++){
+        addMove(&blackMoves,rook.moves[i]);
+    }
+    for (int i=0;i<knight.count;i++){
+        addMove(&blackMoves,knight.moves[i]);
+    }
+    for (int i=0;i<bishop.count;i++){
+        addMove(&blackMoves,bishop.moves[i]);
+    }
+    for (int i=0;i<queen.count;i++){
+        addMove(&blackMoves,queen.moves[i]);
+    }
+    for (int i=0;i<king.count;i++){
+        addMove(&blackMoves,king.moves[i]);
+    }
+    return blackMoves;
 }

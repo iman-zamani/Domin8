@@ -3,6 +3,15 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
+
+// To Do List------------------
+// add bit board for optimizing move generation 
+#define BIT_BOARD  0
+// optimize what move we should look first 
+// for better alpha beta pruning
+#define MOVE_ORDER 0
+//----------------------------
 #define TRUE 1
 #define FALSE 0
 // values for filling squares 

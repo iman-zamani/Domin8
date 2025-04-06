@@ -1,3 +1,5 @@
+#include "define.h"
+#include "move.h"
 #include "moveList.h"
 void initMoveList(MoveList * list){
     list->count = 0;

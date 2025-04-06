@@ -12,3 +12,5 @@ MoveList pseudoLegalWhiteKingMoves(Board *board);
 MoveList pseudoLegalBlackKingMoves(Board *board);
 MoveList pseudoLegalWhiteKnightMoves(Board *board);
 MoveList pseudoLegalBlackKnightMoves(Board *board);
+MoveList allPseudoLegalWhiteMoves(Board *board);
+MoveList allPseudoLegalBlackMoves(Board *board);

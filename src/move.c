@@ -1,3 +1,4 @@
+#include "define.h"
 #include "move.h"
 
 Move createTempMove(int tPieceType, int tStartSquare, int tTargetSquare, bool tIsCapture){
