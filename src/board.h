@@ -15,3 +15,4 @@ typedef struct Board{
 void readFenIntoBoard(Board * board ,char * FEN);
 void printBoard(Board *board);
 bool boardIsCheck(Board *board);
+bool applyMove(Move move);

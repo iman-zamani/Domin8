@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "define.h"
+#include "move.h"
 #include "board.h"
 void readFenIntoBoard(Board * board ,char * FEN){
     int fenIndex = 0;
@@ -183,6 +184,7 @@ void printBoard(Board *board){
     return ;
 }
 bool boardIsCheck(Board *board){
+
     int king = EMPTY;
     int rook = EMPTY;
     int queen = EMPTY;
@@ -375,4 +377,113 @@ bool boardIsCheck(Board *board){
         }
     }
     return FALSE;
+}
+
+// this function will apply any move to the board 
+// it will not check if the move is legal or pseudoLegal
+Board applyMove(Board* board, Move move){
+    assert(!BIT_BOARD && "copying board in apply move function will be different now that we have bit boards");
+    // the updated board to return  
+    Board ret;
+    for (int i=0;i<8;i++){
+        for (int j=0;j<8;j++){
+            ret.squares[i][j] = board->squares[i][j] ;
+        }
+    }
+    ret.whiteShortCastle = board->whiteShortCastle;
+    ret.whiteLongCastle = board->whiteLongCastle;
+    ret.blackShortCastle = board->blackShortCastle;
+    ret.blackLongCastle = board->blackLongCastle;
+    ret.isWhiteTurn = !board->isWhiteTurn;
+    ret.targetEnPassantSquare = -1;
+    ret.halfMovesFromLastCaptureOrPawnMove = board->halfMovesFromLastCaptureOrPawnMove + 1;
+    ret.numFullMoves = board->numFullMoves;
+    if(!ret.isWhiteTurn) ret.numFullMoves++;
+    //----------------------
+    if (move.pawnMovingTwoSquares && move.pieceType>0){
+        ret.targetEnPassantSquare = move.targetSquare +8;
+    }
+    if (move.pawnMovingTwoSquares && move.pieceType<0){
+        ret.targetEnPassantSquare = move.targetSquare -8;
+    }
+    // if king moves 
+    if (move.pieceType == WHITE_KING){
+        ret.whiteShortCastle = FALSE;
+        ret.whiteLongCastle = FALSE;
+    }
+    else if(move.pieceType == BLACK_KING){
+        ret.blackShortCastle = FALSE;
+        ret.blackLongCastle = FALSE;
+    }
+    // if rook moves white
+    if (move.pieceType == WHITE_ROOK && move.startSquare == 63){
+        ret.whiteShortCastle = FALSE;
+    }
+    else if (move.pieceType == WHITE_ROOK && move.startSquare == 56){
+        ret.whiteLongCastle = FALSE;
+    }
+    // if rook moves black 
+    if (move.pieceType == BLACK_ROOK && move.startSquare == 7){
+        ret.blackShortCastle= FALSE;
+    }
+    else if (move.pieceType == BLACK_ROOK && move.startSquare == 0){
+        ret.blackLongCastle = FALSE;
+    }
+    // if rook is captured 
+    if (move.targetSquare == 63){
+        ret.whiteShortCastle = FALSE;
+    }
+    else if (move.targetSquare == 56){
+        ret.whiteLongCastle = FALSE;
+    }
+    // if rook moves black 
+    if (move.targetSquare == 7){
+        ret.blackShortCastle= FALSE;
+    }
+    else if (move.targetSquare == 0){
+        ret.blackLongCastle = FALSE;
+    }
+    // we should add support for accessing the squares in a linear form instead of matrix 
+    // apply the move itself 
+    // if castle 
+    if (move.shortCastle && move.pieceType > 0){
+        ret.squares[move.startSquare] = EMPTY;
+        ret.squares[move.targetSquare] = WHITE_KING;
+        ret.squares[63] = EMPTY;
+        ret.squares[61] = WHITE_ROOK;
+    }
+    else if (move.longCastle && move.pieceType > 0){
+        ret.squares[move.startSquare] = EMPTY;
+        ret.squares[move.targetSquare] = WHITE_KING;
+        ret.squares[56] = EMPTY;
+        ret.squares[59] = WHITE_ROOK;
+    }
+    else if (move.shortCastle && move.pieceType < 0){
+        ret.squares[move.startSquare] = EMPTY;
+        ret.squares[move.targetSquare] = BLACK_ROOK;
+        ret.squares[7] = EMPTY;
+        ret.squares[5] = BLACK_ROOK;
+    }
+    else if (move.longCastle && move.pieceType < 0){
+        ret.squares[move.startSquare] = EMPTY;
+        ret.squares[move.targetSquare] = BLACK_ROOK;
+        ret.squares[0] = EMPTY;
+        ret.squares[3] = BLACK_ROOK;
+    }
+    // en passant 
+    if ((move.pieceType == WHITE_PAWN || move.pieceType == BLACK_PAWN )&& move.targetSquare == board->targetEnPassantSquare){
+        ret.squares[move.startSquare] = EMPTY;
+        ret.squares[move.targetSquare] = move.pieceType;
+        if (move.pieceType > 0){
+            ret.squares[move.targetSquare + 8] = EMPTY;
+        }
+        else {
+            ret.squares[move.targetSquare - 8] = EMPTY;
+        }
+    }
+
+    // other moves 
+    ret.squares[move.startSquare] = EMPTY;
+    ret.squares[move.targetSquare] = move.pieceType;
+    return ret;
 }
