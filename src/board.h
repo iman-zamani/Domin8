@@ -22,3 +22,5 @@ struct {
     uint64_t black_king_bm;
     uint64_t black_pawns_bm;
 }typedef Board;
+
+Board* create_board();

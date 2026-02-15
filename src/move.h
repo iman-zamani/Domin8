@@ -1,4 +1,8 @@
 #pragma once 
+#include <stdbool.h>
+// for bool
+#define TRUE 1
+#define FALSE 0
 // while pieces 
 #define WHITE_PAWN 1
 #define WHITE_BISHOP 4
