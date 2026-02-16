@@ -24,3 +24,24 @@ struct {
 }typedef Board;
 
 Board* create_board();
+
+
+bool is_nth_bit_set(uint64_t input, int8_t n); 
+void print_chess_board(Board* board);
+
+// the last pointer will be set to NULL 
+move* get_legal_moves(Board* board);
+move* get_legal_white_pawn_moves(Board *board);
+move* get_legal_black_pawn_moves(Board *board);
+move* get_legal_white_rook_moves(Board *board);
+move* get_legal_black_rook_moves(Board *board);
+move* get_legal_white_bishop_moves(Board *board);
+move* get_legal_black_bishop_moves(Board *board);
+move* get_legal_white_queen_moves(Board *board);
+move* get_legal_black_queen_moves(Board *board);
+move* get_legal_white_king_moves(Board *board);
+move* get_legal_black_king_moves(Board *board);
+move* get_legal_white_knight_moves(Board *board);
+move* get_legal_black_knight_moves(Board *board);
+move* all_legal_white_moves(Board *board);
+move* all_legal_black_moves(Board *board);

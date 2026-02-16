@@ -18,7 +18,7 @@
 #define BLACK_QUEEN -10
 #define BLACK_ROOK -5
 struct {
-    int start_square;
-    int dest_square;
-    int piece_type;
+    int8_t start_square;
+    int8_t dest_square;
+    int8_t piece_type;
 }typedef move;
