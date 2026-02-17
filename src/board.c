@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "move.h"
 #include "board.h"
@@ -86,28 +87,55 @@ void print_chess_board(Board* board){
     }
 }
 
-move* get_legal_white_pawn_moves(Board *board);
-move* get_legal_black_pawn_moves(Board *board);
-move* get_legal_white_rook_moves(Board *board);
-move* get_legal_black_rook_moves(Board *board);
-move* get_legal_white_bishop_moves(Board *board);
-move* get_legal_black_bishop_moves(Board *board);
-move* get_legal_white_queen_moves(Board *board);
-move* get_legal_black_queen_moves(Board *board);
-move* get_legal_white_king_moves(Board *board);
-move* get_legal_black_king_moves(Board *board);
-move* get_legal_white_knight_moves(Board *board);
-move* get_legal_black_knight_moves(Board *board);
-move* all_legal_white_moves(Board *board);
-move* all_legal_black_moves(Board *board);
+uint8_t get_legal_white_pawn_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_black_pawn_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_white_rook_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_black_rook_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_white_bishop_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_black_bishop_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_white_queen_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_black_queen_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_white_king_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_black_king_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_white_knight_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_legal_black_knight_moves(Board *board, move* moves, uint8_t start_index);
+uint8_t get_all_legal_white_moves(Board *board, move* moves){
+    uint8_t start_index = 0;
+    start_index = get_legal_white_pawn_moves(board, moves,start_index);
+    start_index = get_legal_white_rook_moves(board, moves,start_index);
+    start_index = get_legal_white_bishop_moves(board, moves,start_index);
+    start_index = get_legal_white_queen_moves(board, moves,start_index);
+    start_index = get_legal_white_king_moves(board, moves,start_index);
+    start_index = get_legal_white_knight_moves(board, moves,start_index);
+    return start_index;
+}
+uint8_t get_all_legal_black_moves(Board *board, move* moves){
+    // start_index will tell the functions to where they should start filling moves in the array
+    uint8_t start_index = 0;
+    start_index = get_legal_black_pawn_moves(board, moves,start_index);
+    start_index = get_legal_black_rook_moves(board, moves,start_index);
+    start_index = get_legal_black_bishop_moves(board, moves,start_index);
+    start_index = get_legal_black_queen_moves(board, moves,start_index);
+    start_index = get_legal_black_king_moves(board, moves,start_index);
+    start_index = get_legal_black_knight_moves(board, moves,start_index);
+    return start_index;
+}
 
 move* get_legal_moves(Board* board){
-    move* ret;
+    // maximum number of legal moves that can exist in a valid, legally reachable chess position is 218
+    // we use calloc to make it easy for the program to detect empty indexes
+    move * moves = (move*)calloc(219,sizeof(move));
+    // number of legal moves we found in this position --> for freeing the rest (maybe)
+    uint8_t moves_found = 0;
+    if (moves == NULL) {
+        perror("ERROR allocateing memory in get_legal_moves function\n");
+        exit(EXIT_FAILURE);
+    }
     if (board->is_white_turn){
-        ret = all_legal_white_moves(board);
+        moves_found = get_all_legal_white_moves(board,moves);
     }
     else {
-        ret = all_legal_black_moves(board);
+        moves_found = get_all_legal_black_moves(board,moves);
     }
-    return ret;
+    return moves;
 }
