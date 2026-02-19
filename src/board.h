@@ -21,6 +21,9 @@ struct {
     uint64_t black_queens_bm;
     uint64_t black_king_bm;
     uint64_t black_pawns_bm;
+    // bitmap for the squares in control of sliding pieces
+    uint64_t white_sliding_attacks ;
+    uint64_t black_sliding_attacks
 }typedef Board;
 
 Board* create_board();

@@ -28,6 +28,9 @@ Board* create_board(){
     ret->black_queens_bm = 0b0001000000000000000000000000000000000000000000000000000000000000;
     ret->black_king_bm = 0b0000100000000000000000000000000000000000000000000000000000000000;
     ret->black_pawns_bm = 0b0000000011111111000000000000000000000000000000000000000000000000;
+    // bitmap for the squares in control of sliding pieces, it should be set to zero in the standard starting position
+    ret->white_sliding_attacks = 0;
+    ret->black_sliding_attacks = 0;
     return ret;
 }
 
