@@ -6,7 +6,6 @@
 
 - UCI (Universal Chess Interface) compatible  
 - Aggressive evaluation and move selection  
-- Written in C for performance and control  
 - Minimal-draw design for decisive results  
 
 ## Build Instructions
@@ -35,5 +34,4 @@ make clean
 
 ## License
 
-This project is licensed under a custom MIT-style license with an attribution requirement.
-See [CUSTOM\_LICENSE](./LICENSE) for full terms.
+This project is licensed under [Apache-2.0 license](./LICENSE).
