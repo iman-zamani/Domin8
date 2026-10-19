@@ -15,6 +15,14 @@
 #define QUEEN_W 10
 #define QUEEN_B -10
 
+#define EN_PASSANT 'E'
+#define SHORT_CASTLE 'S'
+#define LONG_CASTLE 'L'
+#define PROMOT_TO_QUEEN 'Q'
+#define PROMOT_TO_BISHOP 'B'
+#define PROMOT_TO_KNIGHT 'N'
+#define PROMOT_TO_ROOK 'R'
+
 // piece position index based on location
 // 56 57 58 59 60 61 62 63
 // 48 49 50 51 52 53 54 55
