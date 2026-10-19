@@ -1,6 +1,7 @@
 #pragma once
-#include "move.h"
 #include <stdint.h>
+#include <stdbool.h>
+#include "move.h"
 
 #define WHITE 'W'
 #define BLACK 'B'
@@ -28,4 +29,14 @@ struct{
     move last_played;
     // whos turn it is (W white and B black)
     char whos_turn_it_is;
+    // if castles are availbe
+    bool short_castle_availbe_for_white;
+    bool short_castle_availbe_for_black;
+    bool long_castle_availbe_for_white;
+    bool long_castle_availbe_for_black;
 }typedef Board ;
+
+
+Board* create_board_from_fen(const char* FEN);
+Board* create_board_starting_position();
+uint64_t position_to_bitboard(int position);
