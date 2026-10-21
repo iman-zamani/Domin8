@@ -8,7 +8,7 @@
 #define ROOK_B -5
 #define KNIGHT_W 3
 #define KNIGHT_B -3
-#define BISHIP_W 4
+#define BISHOP_W 4
 #define BISHOP_B -4
 #define KING_W 20
 #define KING_B -20
@@ -18,10 +18,10 @@
 #define EN_PASSANT 'E'
 #define SHORT_CASTLE 'S'
 #define LONG_CASTLE 'L'
-#define PROMOT_TO_QUEEN 'Q'
-#define PROMOT_TO_BISHOP 'B'
-#define PROMOT_TO_KNIGHT 'N'
-#define PROMOT_TO_ROOK 'R'
+#define PROMOTE_TO_QUEEN 'Q'
+#define PROMOTE_TO_BISHOP 'B'
+#define PROMOTE_TO_KNIGHT 'N'
+#define PROMOTE_TO_ROOK 'R'
 
 // piece position index based on location
 // 56 57 58 59 60 61 62 63
@@ -41,9 +41,9 @@
 // . . . . . . . .
 // P P P P P P P P
 // R N B Q K B N R
-struct{
-    int start_sqaure;
-    int end_sqaure;
+typedef struct{
+    int start_square;
+    int end_square;
     int piece_type;
     // special moves like short castle, long castle, En passant and promotions
     // En passant --> E
@@ -54,4 +54,4 @@ struct{
     // bishop promotion --> B
     // rook promotion --> R
     char special_move;
-}typedef move ;
+} Move ;
